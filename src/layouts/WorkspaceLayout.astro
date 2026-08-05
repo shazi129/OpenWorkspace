@@ -1,0 +1,116 @@
+---
+import DirectoryTree from "../components/DirectoryTree.astro";
+import ModuleNavigation from "../components/ModuleNavigation.astro";
+import type { ModuleManifest, SiteManifest } from "../core/types";
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  activeModule: ModuleManifest;
+  currentSlug: string;
+  pageTitle: string;
+  site: SiteManifest;
+}
+
+const { activeModule, currentSlug, pageTitle, site } = Astro.props;
+const documentTitle = `${pageTitle} · ${site.title}`;
+---
+
+<BaseLayout title={documentTitle} description={site.description}>
+  <div class="workspace" data-workspace>
+    <header class="mobile-header">
+      <button
+        class="menu-button"
+        type="button"
+        aria-controls="module-sidebar"
+        aria-expanded="false"
+        data-drawer-open
+      >
+        <span aria-hidden="true">☰</span>
+        <span class="visually-hidden">打开功能模块</span>
+      </button>
+      <strong>{activeModule.title}</strong>
+    </header>
+
+    <aside class="module-sidebar" id="module-sidebar" data-drawer>
+      <div class="mobile-sidebar-heading">
+        <strong>{site.title}</strong>
+        <button type="button" aria-label="关闭功能模块" data-drawer-close>×</button>
+      </div>
+      <ModuleNavigation
+        modules={site.modules}
+        activeModuleId={activeModule.id}
+      />
+    </aside>
+
+    <button
+      class="drawer-backdrop"
+      type="button"
+      aria-label="关闭功能模块"
+      tabindex="-1"
+      data-drawer-close
+    ></button>
+
+    <main
+      class:list={[
+        "workspace-main",
+        { "has-directory-tree": activeModule.showDirectoryTree },
+      ]}
+    >
+      {
+        activeModule.showDirectoryTree && (
+          <aside class="directory-sidebar" aria-label={`${activeModule.title}目录`}>
+            <DirectoryTree nodes={activeModule.tree} currentSlug={currentSlug} />
+          </aside>
+        )
+      }
+
+      <section class="content-panel">
+        <slot />
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const workspaces = document.querySelectorAll<HTMLElement>("[data-workspace]");
+
+    for (const workspace of workspaces) {
+      const openButton = workspace.querySelector<HTMLButtonElement>("[data-drawer-open]");
+      const closeButtons = workspace.querySelectorAll<HTMLButtonElement>("[data-drawer-close]");
+      let touchStartX: number | undefined;
+      let touchStartY: number | undefined;
+
+      const setDrawerOpen = (open: boolean) => {
+        workspace.classList.toggle("drawer-open", open);
+        openButton?.setAttribute("aria-expanded", String(open));
+        document.body.classList.toggle("drawer-lock", open);
+      };
+
+      openButton?.addEventListener("click", () => setDrawerOpen(true));
+      closeButtons.forEach((button) =>
+        button.addEventListener("click", () => setDrawerOpen(false)),
+      );
+
+      workspace.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse" || event.clientX > 24) return;
+        touchStartX = event.clientX;
+        touchStartY = event.clientY;
+      });
+
+      workspace.addEventListener("pointerup", (event) => {
+        if (touchStartX === undefined || touchStartY === undefined) return;
+        const horizontalDistance = event.clientX - touchStartX;
+        const verticalDistance = Math.abs(event.clientY - touchStartY);
+        if (horizontalDistance > 64 && horizontalDistance > verticalDistance) {
+          setDrawerOpen(true);
+        }
+        touchStartX = undefined;
+        touchStartY = undefined;
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setDrawerOpen(false);
+      });
+    }
+  </script>
+</BaseLayout>
+

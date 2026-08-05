@@ -1,0 +1,59 @@
+---
+import { getEntry, render } from "astro:content";
+import {
+  getContentRoutePaths,
+  loadSiteManifest,
+} from "../../core/content-loader";
+import type { ContentRouteProps } from "../../core/types";
+import WorkspaceLayout from "../../layouts/WorkspaceLayout.astro";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return getContentRoutePaths();
+}
+
+const route = Astro.props as ContentRouteProps;
+const site = loadSiteManifest();
+const activeModule = site.modules.find((module) => module.id === route.moduleId);
+
+if (!activeModule) {
+  throw new Error(`找不到模块：${route.moduleId}`);
+}
+
+let MarkdownContent: Awaited<ReturnType<typeof render>>["Content"] | undefined;
+let pageTitle = route.label;
+
+if (route.kind === "markdown") {
+  if (!route.entryId) throw new Error(`Markdown 缺少 entryId：${route.relativePath}`);
+  const entry = await getEntry("pages", route.entryId);
+  if (!entry) throw new Error(`找不到 Markdown 内容：${route.entryId}`);
+
+  const rendered = await render(entry);
+  MarkdownContent = rendered.Content;
+  pageTitle = entry.data.title ?? pageTitle;
+}
+---
+
+<WorkspaceLayout
+  site={site}
+  activeModule={activeModule}
+  currentSlug={route.slug}
+  pageTitle={pageTitle}
+>
+  {
+    MarkdownContent ? (
+      <article class="markdown-content">
+        <MarkdownContent />
+      </article>
+    ) : (
+      <iframe
+        class="html-tool-frame"
+        src={route.rawUrl}
+        title={pageTitle}
+        sandbox="allow-scripts allow-forms allow-downloads"
+      />
+    )
+  }
+</WorkspaceLayout>
+

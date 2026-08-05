@@ -1,0 +1,11 @@
+{
+  "id": "articles",
+  "title": "文章",
+  "order": 20,
+  "access": "public",
+  "icon": "./icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": true,
+  "index": "index.md"
+}
+

@@ -1,0 +1,30 @@
+---
+import type { ModuleManifest } from "../core/types";
+
+interface Props {
+  activeModuleId: string;
+  modules: ModuleManifest[];
+}
+
+const { activeModuleId, modules } = Astro.props;
+---
+
+<nav class="module-navigation" aria-label="功能模块">
+  <ul>
+    {
+      modules.map((module) => (
+        <li>
+          <a
+            class="module-link"
+            href={module.href}
+            aria-current={module.id === activeModuleId ? "page" : undefined}
+          >
+            <img src={module.iconUrl} alt="" width="44" height="44" />
+            <span>{module.title}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+

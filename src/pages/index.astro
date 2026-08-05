@@ -1,0 +1,17 @@
+---
+import { loadSiteManifest } from "../core/content-loader";
+
+export const prerender = true;
+
+const site = loadSiteManifest();
+const defaultModule = site.modules.find(
+  (module) => module.id === site.defaultModule,
+);
+
+if (!defaultModule) {
+  throw new Error(`找不到默认模块：${site.defaultModule}`);
+}
+
+return Astro.redirect(defaultModule.href);
+---
+

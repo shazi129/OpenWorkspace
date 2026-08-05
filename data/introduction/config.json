@@ -1,0 +1,11 @@
+{
+  "id": "introduction",
+  "title": "作者",
+  "order": 10,
+  "access": "public",
+  "icon": "./icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": false,
+  "index": "index.md"
+}
+

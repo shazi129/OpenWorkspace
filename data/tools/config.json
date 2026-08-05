@@ -1,0 +1,11 @@
+{
+  "id": "tools",
+  "title": "工具",
+  "order": 30,
+  "access": "public",
+  "icon": "./icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": true,
+  "index": "index.html"
+}
+

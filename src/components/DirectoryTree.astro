@@ -1,0 +1,45 @@
+---
+import type { ContentTreeNode } from "../core/types";
+import DirectoryTree from "./DirectoryTree.astro";
+
+interface Props {
+  currentSlug: string;
+  nodes: ContentTreeNode[];
+}
+
+const { currentSlug, nodes } = Astro.props;
+---
+
+<ul class="directory-list">
+  {
+    nodes.map((node) => {
+      if (node.kind === "directory") {
+        const containsCurrent =
+          currentSlug === node.slug || currentSlug.startsWith(`${node.slug}/`);
+
+        return (
+          <li class="directory-node">
+            <details open={containsCurrent}>
+              <summary>{node.label}</summary>
+              <DirectoryTree
+                nodes={node.children ?? []}
+                currentSlug={currentSlug}
+              />
+            </details>
+          </li>
+        );
+      }
+
+      return (
+        <li class="file-node">
+          <a
+            href={node.href}
+            aria-current={node.slug === currentSlug ? "page" : undefined}
+          >
+            {node.label}
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>
