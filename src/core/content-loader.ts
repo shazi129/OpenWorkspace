@@ -159,6 +159,10 @@ function buildTree(
 
       if (entry.isDirectory()) {
         const children = buildTree(absolutePath, moduleId, contentRoot);
+        if (children.length === 1 && children[0].kind !== "directory") {
+          return children;
+        }
+
         return children.length
           ? [
               {
@@ -184,6 +188,13 @@ function buildTree(
         },
       ];
     });
+}
+
+export function buildContentTree(
+  contentRoot: string,
+  moduleId: string,
+): ContentTreeNode[] {
+  return buildTree(contentRoot, moduleId, contentRoot);
 }
 
 function validateModulePaths(
@@ -247,7 +258,7 @@ function loadModule(moduleDir: string, directoryName: string): ModuleManifest | 
     href: indexFile.href,
     iconUrl: rawAssetUrl(config.id, iconRelativePath),
     indexSlug: indexFile.slug,
-    tree: buildTree(contentDir, config.id, contentDir),
+    tree: buildContentTree(contentDir, config.id),
   };
 }
 
