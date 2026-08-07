@@ -8,6 +8,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
+    "context": "node scripts/context-report.mjs",
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",

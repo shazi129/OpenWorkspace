@@ -1,0 +1,40 @@
+# 工作区 UI 模块
+
+## 职责
+
+工作区 UI 负责模块导航、内容目录树、桌面/移动端响应式布局和纯客户端交互状态。
+
+## 主要文件
+
+| 文件 | 职责 |
+| --- | --- |
+| `src/layouts/WorkspaceLayout.astro` | 页面骨架、移动抽屉、目录宽度和收起交互 |
+| `src/components/ModuleNavigation.astro` | 一级模块导航 |
+| `src/components/DirectoryTree.astro` | 递归目录与文件链接 |
+| `src/styles/global.css` | 布局、状态、响应式和可访问性样式 |
+
+## 桌面布局
+
+- 最左侧是固定宽度模块导航。
+- 启用 `showDirectoryTree` 的模块在内容左侧增加目录区域。
+- 目录区域宽度通过 CSS 变量 `--directory-width` 控制。
+- 分隔条支持指针拖动，也支持方向键、Home 和 End 调整。
+- 目录宽度和收起状态保存在 `localStorage`，存储不可用时仍可在当前页面使用。
+- 收起后保留窄控制区域，避免失去重新展开入口。
+
+## 目录节点
+
+- 目录使用原生 `details`/`summary` 语义和自定义三角标记。
+- 当前页面所在路径默认展开。
+- 文件名保持单行，超出宽度时显示省略号；`title` 提供完整名称。
+- 当前文件使用 `aria-current="page"`。
+
+## 移动端
+
+- 一级模块导航变为左侧抽屉。
+- 支持菜单按钮、遮罩、Escape 和屏幕边缘右滑打开。
+- 内容目录位于正文上方并限制最大高度。
+- 桌面拖动分隔条在移动端隐藏，目录仍可整体收起。
+- `prefers-reduced-motion` 会缩短动画。
+
+行为契约见[目录树 spec](../../specs/directory-tree.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。
