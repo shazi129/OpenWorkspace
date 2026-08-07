@@ -27,6 +27,8 @@ export const moduleConfigSchema = z
       .refine((value) => value !== 0, "order 不能为 0")
       .default(100),
     access: z.enum(["public", "authenticated", "allowlist"]).default("public"),
+    private: z.boolean().default(false),
+    publish: z.boolean().default(true),
     icon: relativePathSchema.default("./icon.svg"),
     contentDir: relativePathSchema.default("./content"),
     showDirectoryTree: z.boolean().default(false),

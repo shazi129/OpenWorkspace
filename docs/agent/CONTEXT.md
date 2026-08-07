@@ -20,11 +20,12 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护
 - 从 `workspace/config.json` 和 `workspace/modules/<module>/config.json` 加载站点及模块配置。
 - 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。
 - `workspace/services/` 提供工作区更新等全局私有服务。
-- `settings` 是 `order: -1` 的客户端模块，当前提供拉取仓库并重新构建的“更新”操作。
+- `settings` 是只能通过 `/settings/` 访问的 private 客户端模块，当前提供拉取仓库并重新构建的“更新”操作。
 - 使用 Zod 校验配置、模块 ID、访问级别和相对路径。
 - 扫描 Markdown、HTML 及配套资源，生成静态内容和资源路由。
 - 生成模块导航和递归目录树；只有一个内容文件的目录会被折叠。
 - 模块 `order` 支持正数从顶部排序、负数从底部排序，`0` 无效。
+- 模块 `private` 控制是否隐藏工具栏入口，`publish` 控制是否进入静态构建。
 - 目录树支持节点类型图标、展开状态、单行省略、拖动调整宽度和整体收起。
 - Markdown 支持标题锚点及独立 `[TOC]` 标记生成的文章目录。
 - Markdown 图片按正文宽度缩放并保持比例。
@@ -92,6 +93,7 @@ Astro 内容页面         静态资源路由
 - 模块首页默认读取模块根 `index.md`；也可指向 `content/` 文件，根首页不进入目录树。
 - 文件相对路径决定 URL；移动或重命名内容会改变外部链接。
 - `authenticated` 和 `allowlist` 当前只表示“不进入静态构建”，尚未实现登录访问。
+- `private: true` 只隐藏导航，页面仍在 `dist/` 中，不能用于保护敏感内容。
 - Frontmatter 的 `order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
 
 ## 环境与命令

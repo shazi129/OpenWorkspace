@@ -11,7 +11,7 @@
 | `src/core/config-schema.ts` | 全局/模块配置 schema、默认值、相对路径格式 |
 | `src/core/types.ts` | `ContentFile`、`ContentTreeNode`、`ModuleManifest` 等类型 |
 | `src/core/content-loader.ts` | 文件扫描、边界校验、树生成、URL 和静态路由参数 |
-| `src/content.config.ts` | Markdown 集合、Frontmatter schema 和 entry ID |
+| `src/content.config.ts` | 已发布模块的 Markdown 集合、Frontmatter schema 和 entry ID |
 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 原始资源响应、安全响应头 |
 
 ## 清单生成
@@ -21,10 +21,12 @@
 1. 解析 `workspace/config.json`。
 2. 枚举 `workspace/modules/` 下的模块目录。
 3. 要求目录名与模块 `id` 一致。
-4. 排除非 `public` 模块。
+4. 排除 `publish: false` 或非 `public` 模块；保留只隐藏导航的 private 模块。
 5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部且存在。
 6. 生成扁平 `contentFiles` 和递归 `tree`。
 7. 先排列正数 `order` 顶部组，再排列负数底部组；同值按标题排序，并确认默认模块存在。
+
+Astro 内容集合复用清单中的已发布模块范围，因此 `publish: false`、`authenticated` 和 `allowlist` 模块的 Markdown 不参与内容同步。
 
 ## 内容树规则
 
@@ -52,4 +54,5 @@
 - `services/`、模块 `server/` 和 `storage/` 不参与静态资源扫描。
 - 路径进入清单前必须经过模块边界校验。
 - 符号链接不进入内容或资源路由。
-- 非公开模块不能生成页面、导航或静态资源。
+- `publish: false`、`authenticated` 和 `allowlist` 模块不能生成页面、导航或静态资源。
+- `private: true` 只影响导航，模块页面和资源仍属于公开静态产物。

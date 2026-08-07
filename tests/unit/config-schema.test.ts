@@ -11,6 +11,8 @@ describe("配置校验", () => {
       icon: "./icon.svg",
       index: "index.md",
       order: 100,
+      private: false,
+      publish: true,
       runtime: "static",
       showDirectoryTree: false,
     });

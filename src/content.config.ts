@@ -3,16 +3,20 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { loadSiteManifest } from "./core/content-loader";
 
 const workspaceRoot = path.resolve(
   process.env.OPENWORKSPACE_WORKSPACE_ROOT ??
     path.join(process.cwd(), "workspace"),
 );
+const publishedMarkdownPatterns = loadSiteManifest(workspaceRoot).modules.map(
+  (module) => `${module.id}/**/*.md`,
+);
 
 const pages = defineCollection({
   loader: glob({
     base: pathToFileURL(path.join(workspaceRoot, "modules")),
-    pattern: "*/**/*.md",
+    pattern: publishedMarkdownPatterns,
     generateId: ({ entry }) =>
       entry.replaceAll("\\", "/").replace(/\.md$/i, ""),
   }),

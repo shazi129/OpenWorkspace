@@ -11,6 +11,7 @@
 4. 顶部组与底部组之间使用剩余空间分隔；导航内容超过可用高度时保持正常滚动。
 5. 相同 `order` 为兼容旧配置仍然允许，并按模块标题稳定排序；需要精确位置时应使用唯一值。
 6. 桌面端和移动端使用相同顺序。
+7. `private: true` 的模块不参与桌面端或移动端导航，但不改变它的页面 URL。
 
 ## 验收条件
 
@@ -18,5 +19,6 @@
 - `-1` 是最靠近导航底部的模块。
 - `order: 0` 在配置解析阶段报错。
 - 没有负数模块时，所有模块保持顶部对齐。
+- private 模块不会在导航中占位，也不会影响底部组的分隔位置。
 
-实现结构见[工作区 UI](../architecture/modules/workspace-ui.md)和[内容与路由管线](../architecture/modules/content-pipeline.md)。
+实现结构见[工作区 UI](../architecture/modules/workspace-ui.md)和[内容与路由管线](../architecture/modules/content-pipeline.md)，发布语义见[模块导航可见性与静态发布](module-publication.md)。

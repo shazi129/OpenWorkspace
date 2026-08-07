@@ -46,7 +46,7 @@ BaseLayout
 
 - 只扫描模块目录内部的路径，拒绝绝对路径和 `../` 逃逸。
 - 忽略符号链接，避免扫描到预期目录之外。
-- 当前只构建 `access: "public"` 的模块。
+- 当前只构建 `access: "public"` 且 `publish: true` 的模块；其中 `private: true` 仍生成页面，只隐藏导航入口。
 - HTML 工具运行在 sandbox iframe 中，资源响应附带 CSP 和 `nosniff`。
 - 静态站点无法提供真正私有内容；认证模块必须由未来的服务端方案实现。
 - Nginx不得把 `workspace/services/`、模块 `server/` 或 `workspace/storage/` 作为静态目录发布。

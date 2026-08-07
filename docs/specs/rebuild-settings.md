@@ -5,14 +5,14 @@
 
 ## 目标
 
-- `workspace/modules/settings` 提供独立设置模块，并通过 `order: -1` 固定在模块导航底部。
+- `workspace/modules/settings` 提供独立的 private 设置模块，不在工具栏展示，只通过 `/settings/` 访问。
 - 当前设置页面只提供“更新”。
 - 更新按顺序执行 `git pull --ff-only` 和 `npm run build`。
 - 操作需要管理令牌，且同一时间只能执行一个任务。
 
 ## 行为要求
 
-1. 设置作为普通模块参与导航、选中态和独立 `/settings/` URL，桌面和移动端均可操作。
+1. 设置不进入桌面或移动端模块导航，直接访问 `/settings/` 时仍使用普通模块页面布局。
 2. 点击更新时在当前浏览器会话中获取管理令牌，并以 Bearer 令牌发送 POST 请求。
 3. 拉取失败时不执行构建；构建失败时保留后台日志并向前端返回失败状态。
 4. 已有任务执行时返回冲突状态，不能启动并行的 Git/构建任务。
@@ -28,7 +28,7 @@
 ## 验收条件
 
 - 未提供或提供错误令牌时返回 401。
-- 设置模块是 `runtime: "client"`、`order: -1`，并位于模块导航最下方。
+- 设置模块是 `runtime: "client"`、`private: true`、`publish: true`，构建生成 `/settings/` 且工具栏中没有入口。
 - `git pull --ff-only` 成功后才执行 `npm run build`。
 - 拉取失败的测试确认构建不会执行。
 - API 健康检查和服务发现测试通过。

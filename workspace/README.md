@@ -8,7 +8,8 @@
 - `storage/`：数据库、缓存和任务状态，禁止进入 Git 和 `dist/`。
 - 模块必须包含 `config.json` 才会被识别。
 - 模块 `order` 使用正数从顶部排序，使用负数从底部排序；`-1` 最靠近底部，不能使用 `0`。
-- 内置 `modules/settings/` 是 `order: -1` 的客户端设置模块，当前提供工作区更新。
+- 模块 `private: true` 时隐藏工具栏入口但仍生成页面；`publish: false` 时完全不进入静态构建。
+- 内置 `modules/settings/` 是只能通过 `/settings/` 访问的 private 客户端模块，当前提供工作区更新。
 - 模块内容默认放在 `content/` 中，支持 Markdown 和 HTML。
 - 修改内容后运行 `npm run dev` 预览，运行 `npm run build` 生成 `dist/`。
 

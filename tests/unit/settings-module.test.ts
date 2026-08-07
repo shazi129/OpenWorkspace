@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { loadSiteManifest } from "../../src/core/content-loader";
 
 describe("Workspace 设置模块", () => {
-  it("作为 -1 客户端模块固定在导航底部", () => {
+  it("作为只能通过 URL 访问的 private 客户端模块生成", () => {
     const repositoryRoot = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
       "../..",
@@ -15,9 +15,13 @@ describe("Workspace 设置模块", () => {
     expect(settings).toMatchObject({
       href: "/settings/",
       order: -1,
+      private: true,
+      publish: true,
       runtime: "client",
       showDirectoryTree: false,
     });
-    expect(manifest.modules.at(-1)?.id).toBe("settings");
+    expect(
+      manifest.modules.filter((module) => !module.private).map((module) => module.id),
+    ).not.toContain("settings");
   });
 });

@@ -4,6 +4,8 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildContentTree,
+  getContentRoutePaths,
+  getRawAssetRoutePaths,
   loadSiteManifest,
 } from "../../src/core/content-loader";
 
@@ -167,5 +169,68 @@ describe("模块导航排序", () => {
       "bottom-two",
       "bottom-one",
     ]);
+  });
+});
+
+describe("模块发布控制", () => {
+  function createPublishedModule(
+    root: string,
+    id: string,
+    config: Record<string, unknown> = {},
+  ): void {
+    createFile(
+      root,
+      `modules/${id}/config.json`,
+      JSON.stringify({ id, title: id, ...config }),
+    );
+    createFile(root, `modules/${id}/icon.svg`, "<svg></svg>");
+    createFile(root, `modules/${id}/index.md`);
+    createFile(root, `modules/${id}/content/内容.md`);
+  }
+
+  it("保留 private 模块供 URL 访问，并排除 publish false 模块", () => {
+    const root = createContentRoot();
+    createFile(
+      root,
+      "config.json",
+      JSON.stringify({ defaultModule: "articles" }),
+    );
+    createPublishedModule(root, "articles");
+    createPublishedModule(root, "private-tools", { private: true });
+    createFile(
+      root,
+      "modules/unpublished/config.json",
+      JSON.stringify({
+        id: "unpublished",
+        title: "unpublished",
+        publish: false,
+      }),
+    );
+
+    const modules = loadSiteManifest(root).modules;
+    expect(modules.map((module) => module.id)).toEqual([
+      "articles",
+      "private-tools",
+    ]);
+    expect(modules.find((module) => module.id === "private-tools")).toMatchObject({
+      href: "/private-tools/",
+      private: true,
+      publish: true,
+    });
+    expect(
+      getContentRoutePaths(root).some(
+        (route) => route.params.module === "private-tools",
+      ),
+    ).toBe(true);
+    expect(
+      getContentRoutePaths(root).some(
+        (route) => route.params.module === "unpublished",
+      ),
+    ).toBe(false);
+    expect(
+      getRawAssetRoutePaths(root).some(
+        (route) => route.params.module === "unpublished",
+      ),
+    ).toBe(false);
   });
 });

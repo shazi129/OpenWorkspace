@@ -307,8 +307,9 @@ function loadModule(
     throw new Error(`模块目录名 ${directoryName} 必须与 config.json 中的 id ${config.id} 一致`);
   }
 
-  // 第一阶段只输出 public 模块。非公开内容绝不能进入静态产物。
-  if (config.access !== "public") return undefined;
+  // 未发布及需要认证的模块不能进入静态产物。private 只隐藏导航，
+  // 仍属于可通过 URL 访问的公开静态内容。
+  if (!config.publish || config.access !== "public") return undefined;
 
   const { contentDir, iconPath, indexPath } = validateModulePaths(moduleDir, config);
   const scannedContentFiles = buildContentFiles(
@@ -367,20 +368,20 @@ export function loadSiteManifest(workspaceRoot = WORKSPACE_ROOT): SiteManifest {
     .sort(compareModuleOrder);
 
   if (modules.length === 0) {
-    throw new Error("workspace/modules 中没有可公开展示的模块");
+    throw new Error("workspace/modules 中没有可静态发布的模块");
   }
 
   if (!modules.some((module) => module.id === globalConfig.defaultModule)) {
     throw new Error(
-      `defaultModule ${globalConfig.defaultModule} 不存在，或不是 public 模块`,
+      `defaultModule ${globalConfig.defaultModule} 不存在，或未进入静态发布`,
     );
   }
 
   return { ...globalConfig, modules };
 }
 
-export function getContentRoutePaths() {
-  return loadSiteManifest().modules.flatMap((module) =>
+export function getContentRoutePaths(workspaceRoot = WORKSPACE_ROOT) {
+  return loadSiteManifest(workspaceRoot).modules.flatMap((module) =>
     module.contentFiles.map((file) => ({
       params: {
         module: module.id,
@@ -419,8 +420,8 @@ function contentType(filePath: string): string {
   return types[extension] ?? "application/octet-stream";
 }
 
-export function getRawAssetRoutePaths() {
-  return loadSiteManifest().modules.flatMap((module) => {
+export function getRawAssetRoutePaths(workspaceRoot = WORKSPACE_ROOT) {
+  return loadSiteManifest(workspaceRoot).modules.flatMap((module) => {
     const iconPath = resolveInside(module.absoluteModuleDir, module.icon, "icon");
     const assetPaths = [
       iconPath,

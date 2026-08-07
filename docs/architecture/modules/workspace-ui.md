@@ -30,10 +30,11 @@
 - 图标作为装饰内容使用空 `alt`，模块标题提供链接的可访问名称。
 - 正数 `order` 从导航顶部向下排列；负数模块靠底部排列，其中 `-1` 最靠近底部。
 - 首个负数模块使用弹性上边距分隔上下两组；内容溢出时由导航区域滚动。
+- `private: true` 的模块在排序后从导航中排除，但仍可使用直接 URL 访问。
 
 ## 设置模块
 
-- `workspace/modules/settings/` 是 `order: -1` 的客户端模块，使用普通模块路由和选中态。
+- `workspace/modules/settings/` 是 private 客户端模块，构建 `/settings/` 页面但不显示在工具栏。
 - 设置页面的结构和文字位于工作区 Markdown；`WorkspaceUpdateClient.astro` 只增强带 `data-workspace-update` 标记的操作。
 - 更新令牌只保存在当前浏览器会话，页面和构建产物不包含令牌。
 

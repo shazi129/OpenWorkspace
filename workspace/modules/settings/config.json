@@ -3,6 +3,8 @@
   "title": "设置",
   "order": -1,
   "access": "public",
+  "private": true,
+  "publish": true,
   "runtime": "client",
   "icon": "./content/icon.svg",
   "contentDir": "./content",
