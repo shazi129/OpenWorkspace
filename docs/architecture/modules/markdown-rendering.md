@@ -10,6 +10,7 @@
 | --- | --- |
 | `astro.config.mjs` | 配置 Sätteri Markdown processor |
 | `src/content.config.ts` | Markdown 文件发现和 Frontmatter schema |
+| `src/markdown/workspace-markdown-loader.ts` | 已发布 Markdown 的文件读取、内容存储和 `#` 路径处理 |
 | `src/markdown/toc-marker.ts` | MDAST 阶段识别 `[TOC]` 并写入元数据 |
 | `src/pages/[module]/[...slug].astro` | 获取 entry、render 结果和 headings |
 | `src/components/ArticleToc.astro` | 把 headings 转为文章内导航 |
@@ -36,3 +37,7 @@
 ## Frontmatter 现状
 
 支持 `title`、`description`、`order` 和 `draft`。当前只有 `title` 用作页面标题；`order` 和 `draft` 尚未驱动目录排序或发布过滤。
+
+## 文件路径
+
+Markdown loader 从内容清单取得绝对文件路径，直接读取文件后再通过 `pathToFileURL()` 传给 Astro 渲染器；存入内容集合的相对 `filePath` 按路径段编码，供 Astro 正确解析同目录图片。因此 `#` 不会被当作 URL fragment，entry ID 和网页 URL 仍按真实相对路径生成。

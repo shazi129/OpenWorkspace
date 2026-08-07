@@ -60,6 +60,7 @@ Astro 内容页面         静态资源路由
 | 内容清单 | `src/core/content-loader.ts` | 扫描模块、内容树、页面路由和资源路由 |
 | 核心类型 | `src/core/types.ts` | 清单、内容文件、目录树和路由类型 |
 | Markdown 集合 | `src/content.config.ts` | Astro Content Collection 加载和 Frontmatter schema |
+| Markdown 加载 | `src/markdown/workspace-markdown-loader.ts` | 从工作区真实路径读取已发布 Markdown 并处理文件名中的 `#` |
 | Markdown 扩展 | `src/markdown/toc-marker.ts` | 识别并移除 `[TOC]`，写入渲染元数据 |
 | 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown/HTML 路由渲染 |
 | 资源页面 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 图标、附件和 HTML 资源响应 |

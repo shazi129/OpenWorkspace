@@ -12,6 +12,7 @@
 | `src/core/types.ts` | `ContentFile`、`ContentTreeNode`、`ModuleManifest` 等类型 |
 | `src/core/content-loader.ts` | 文件扫描、边界校验、树生成、URL 和静态路由参数 |
 | `src/content.config.ts` | 已发布模块的 Markdown 集合、Frontmatter schema 和 entry ID |
+| `src/markdown/workspace-markdown-loader.ts` | 通过真实文件路径读取 Markdown，支持文件名中的 `#` |
 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 原始资源响应、安全响应头 |
 
 ## 清单生成
@@ -26,7 +27,7 @@
 6. 生成扁平 `contentFiles` 和递归 `tree`。
 7. 先排列正数 `order` 顶部组，再排列负数底部组；同值按标题排序，并确认默认模块存在。
 
-Astro 内容集合复用清单中的已发布模块范围，因此 `publish: false`、`authenticated` 和 `allowlist` 模块的 Markdown 不参与内容同步。
+Astro 内容集合复用清单中的已发布模块范围，因此 `publish: false`、`authenticated` 和 `allowlist` 模块的 Markdown 不参与内容同步。工程自定义 loader 使用绝对文件路径读取正文，用 `pathToFileURL()` 提供渲染上下文，并把存入 Astro 的相对 `filePath` 按路径段编码，避免正文读取和相对图片解析时把文件名中的 `#` 误解为 URL fragment。
 
 ## 内容树规则
 
@@ -45,6 +46,8 @@ Astro 内容集合复用清单中的已发布模块范围，因此 `publish: fal
 - 根首页映射到模块 URL；`content/` 首页沿用该文件 URL，并作为目录树默认定位。
 - 其他内容去掉扩展名并保留相对目录。
 - 每个 URL 段独立进行百分号编码。
+- 文件或目录名中的 `#` 保持原始文件名，并在公开 URL 中编码为 `%23`。
+- 当前 Astro 静态路由不能处理文件名中的字面量 `%`；这类内容会导致生产构建失败，应避免用于发布内容路径。
 - Markdown 由内容集合渲染；HTML 通过资源路由进入 iframe。
 - 非 Markdown 资源可由 `/openworkspace-assets/<module>/<module-relative-path>` 访问。
 
