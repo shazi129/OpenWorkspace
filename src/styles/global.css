@@ -27,6 +27,11 @@ body.drawer-lock {
   overflow: hidden;
 }
 
+body.directory-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
 a {
   color: inherit;
 }
@@ -122,17 +127,95 @@ summary {
 }
 
 .workspace-main.has-directory-tree {
-  grid-template-columns: 260px minmax(0, 1fr);
+  --directory-width: 260px;
+  grid-template-columns: var(--directory-width) minmax(0, 1fr);
 }
 
-.directory-sidebar {
+.directory-region {
   position: sticky;
   top: 0;
   height: 100vh;
+  min-width: 0;
+  background: #fbfcfe;
+}
+
+.directory-sidebar {
+  height: 100%;
   padding: 1.25rem 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid var(--border);
-  background: #fbfcfe;
+}
+
+.directory-resizer {
+  position: absolute;
+  inset: 0 -4px 0 auto;
+  z-index: 11;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.directory-resizer::before {
+  position: absolute;
+  inset: 0 3px;
+  content: "";
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.directory-resizer:hover::before,
+.directory-resizer:focus-visible::before,
+body.directory-resizing .directory-resizer::before {
+  background: var(--accent);
+}
+
+.directory-toggle {
+  position: absolute;
+  top: 1rem;
+  right: -13px;
+  z-index: 12;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  place-items: center;
+  color: #475467;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(15 23 42 / 10%);
+  cursor: pointer;
+}
+
+.directory-toggle::before {
+  content: "‹";
+  font-size: 1.15rem;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.directory-toggle:hover,
+.directory-toggle:focus-visible {
+  border-color: #9acbfa;
+  color: #0569c1;
+  background: #eef6ff;
+}
+
+.workspace-main.directory-collapsed {
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+
+.directory-collapsed .directory-region {
+  border-right: 1px solid var(--border);
+}
+
+.directory-collapsed .directory-toggle {
+  right: 2px;
+}
+
+.directory-collapsed .directory-toggle::before {
+  content: "›";
 }
 
 .directory-list .directory-list {
@@ -141,12 +224,55 @@ summary {
 
 .directory-node summary,
 .file-node a {
-  display: block;
   padding: 0.42rem 0.55rem;
+  overflow: hidden;
   border-radius: 0.4rem;
   color: #475467;
   cursor: pointer;
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.directory-node summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  list-style: none;
+}
+
+.directory-node summary::-webkit-details-marker {
+  display: none;
+}
+
+.directory-node summary::marker {
+  content: "";
+}
+
+.directory-node summary::before {
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid #667085;
+  content: "";
+  flex: 0 0 auto;
+  transform-origin: 2px center;
+  transition: transform 120ms ease;
+}
+
+.directory-node details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.directory-node summary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-node a {
+  display: block;
 }
 
 .directory-node summary:hover,
@@ -160,8 +286,74 @@ summary {
 }
 
 .content-panel {
+  container: content-panel / inline-size;
   min-width: 0;
   background: var(--panel);
+}
+
+.markdown-page.has-article-toc {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 860px);
+  align-items: start;
+  justify-content: center;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  padding: 3rem clamp(1rem, 3vw, 3rem) 5rem;
+}
+
+.article-toc {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  padding: 0.9rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  color: #475467;
+  background: #fbfcfe;
+}
+
+.article-toc-title {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: #344054;
+  font-size: 0.9rem;
+}
+
+.article-toc ol {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.article-toc-item a {
+  display: block;
+  padding: 0.28rem 0.35rem;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-toc-item a:hover,
+.article-toc-item a:focus-visible {
+  color: #0569c1;
+  background: #e7f3ff;
+}
+
+.article-toc-item.depth-3 {
+  padding-left: 0.7rem;
+}
+
+.article-toc-item.depth-4 {
+  padding-left: 1.4rem;
+}
+
+.article-toc-item.depth-5,
+.article-toc-item.depth-6 {
+  padding-left: 2.1rem;
 }
 
 .markdown-content {
@@ -169,6 +361,12 @@ summary {
   margin: 0 auto;
   padding: 3rem 0 5rem;
   line-height: 1.75;
+}
+
+.markdown-page.has-article-toc .markdown-content {
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .markdown-content h1,
@@ -184,6 +382,18 @@ summary {
 
 .markdown-content h2 {
   margin-top: 2.2rem;
+}
+
+.markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 1rem;
+}
+
+.markdown-content img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  object-fit: contain;
 }
 
 .markdown-content code {
@@ -228,6 +438,22 @@ summary {
 
 .error-page a {
   color: var(--accent);
+}
+
+@container content-panel (max-width: 980px) {
+  .markdown-page.has-article-toc {
+    display: block;
+    width: min(100% - 3rem, 860px);
+    margin: 0 auto;
+    padding: 3rem 0 5rem;
+  }
+
+  .article-toc {
+    position: relative;
+    top: auto;
+    max-height: 18rem;
+    margin-bottom: 2rem;
+  }
 }
 
 @media (max-width: 760px) {
@@ -332,6 +558,12 @@ summary {
     min-height: calc(100vh - 56px);
   }
 
+  .directory-region {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
   .directory-sidebar {
     position: static;
     width: 100%;
@@ -341,7 +573,41 @@ summary {
     border-bottom: 1px solid var(--border);
   }
 
+  .directory-resizer {
+    display: none;
+  }
+
+  .directory-toggle {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .directory-toggle::before {
+    content: "⌃";
+    font-size: 0.9rem;
+    transform: none;
+  }
+
+  .workspace-main.directory-collapsed .directory-region {
+    min-height: 48px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .directory-collapsed .directory-toggle {
+    right: 0.75rem;
+  }
+
+  .directory-collapsed .directory-toggle::before {
+    content: "⌄";
+  }
+
   .markdown-content {
+    width: min(100% - 2rem, 860px);
+    padding: 2rem 0 4rem;
+  }
+
+  .markdown-page.has-article-toc {
     width: min(100% - 2rem, 860px);
     padding: 2rem 0 4rem;
   }
@@ -359,4 +625,3 @@ summary {
     transition-duration: 0.01ms !important;
   }
 }
-

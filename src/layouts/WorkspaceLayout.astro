@@ -55,12 +55,41 @@ const documentTitle = `${pageTitle} · ${site.title}`;
         "workspace-main",
         { "has-directory-tree": activeModule.showDirectoryTree },
       ]}
+      data-workspace-main
     >
       {
         activeModule.showDirectoryTree && (
-          <aside class="directory-sidebar" aria-label={`${activeModule.title}目录`}>
-            <DirectoryTree nodes={activeModule.tree} currentSlug={currentSlug} />
-          </aside>
+          <div class="directory-region" data-directory-region>
+            <aside
+              class="directory-sidebar"
+              id="directory-tree"
+              aria-label={`${activeModule.title}目录`}
+              data-directory-sidebar
+            >
+              <DirectoryTree nodes={activeModule.tree} currentSlug={currentSlug} />
+            </aside>
+            <div
+              class="directory-resizer"
+              role="separator"
+              aria-label="调整目录树宽度"
+              aria-controls="directory-tree"
+              aria-orientation="vertical"
+              aria-valuemin="180"
+              aria-valuemax="600"
+              aria-valuenow="260"
+              tabindex="0"
+              data-directory-resizer
+            ></div>
+            <button
+              class="directory-toggle"
+              type="button"
+              aria-label="收起目录树"
+              aria-controls="directory-tree"
+              aria-expanded="true"
+              title="收起目录树"
+              data-directory-toggle
+            ></button>
+          </div>
         )
       }
 
@@ -110,7 +139,153 @@ const documentTitle = `${pageTitle} · ${site.title}`;
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") setDrawerOpen(false);
       });
+
+      const directoryMain = workspace.querySelector<HTMLElement>(
+        "[data-workspace-main]",
+      );
+      const directoryRegion = workspace.querySelector<HTMLElement>(
+        "[data-directory-region]",
+      );
+      const directorySidebar = workspace.querySelector<HTMLElement>(
+        "[data-directory-sidebar]",
+      );
+      const directoryResizer = workspace.querySelector<HTMLElement>(
+        "[data-directory-resizer]",
+      );
+      const directoryToggle = workspace.querySelector<HTMLButtonElement>(
+        "[data-directory-toggle]",
+      );
+
+      if (
+        directoryMain &&
+        directoryRegion &&
+        directorySidebar &&
+        directoryResizer &&
+        directoryToggle
+      ) {
+        const minimumWidth = 180;
+        const defaultWidth = 260;
+        const widthStorageKey = "openworkspace.directoryTree.width";
+        const collapsedStorageKey = "openworkspace.directoryTree.collapsed";
+        let directoryWidth = defaultWidth;
+        let resizingPointer: number | undefined;
+
+        const readStoredValue = (key: string) => {
+          try {
+            return window.localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        };
+
+        const storeValue = (key: string, value: string) => {
+          try {
+            window.localStorage.setItem(key, value);
+          } catch {
+            // 浏览器禁用本地存储时，交互仍在当前页面内生效。
+          }
+        };
+
+        const maximumWidth = () =>
+          Math.max(minimumWidth, Math.min(600, directoryMain.clientWidth - 320));
+
+        const setDirectoryWidth = (width: number, persist = false) => {
+          directoryWidth = Math.round(
+            Math.min(maximumWidth(), Math.max(minimumWidth, width)),
+          );
+          directoryMain.style.setProperty(
+            "--directory-width",
+            `${directoryWidth}px`,
+          );
+          directoryResizer.setAttribute("aria-valuenow", String(directoryWidth));
+          directoryResizer.setAttribute("aria-valuemax", String(maximumWidth()));
+          if (persist) storeValue(widthStorageKey, String(directoryWidth));
+        };
+
+        const setDirectoryCollapsed = (collapsed: boolean, persist = false) => {
+          directoryMain.classList.toggle("directory-collapsed", collapsed);
+          directorySidebar.toggleAttribute("hidden", collapsed);
+          directoryResizer.toggleAttribute("hidden", collapsed);
+          directoryResizer.tabIndex = collapsed ? -1 : 0;
+          directoryToggle.setAttribute("aria-expanded", String(!collapsed));
+          const label = collapsed ? "展开目录树" : "收起目录树";
+          directoryToggle.setAttribute("aria-label", label);
+          directoryToggle.title = label;
+          if (persist) storeValue(collapsedStorageKey, String(collapsed));
+        };
+
+        const storedWidth = Number.parseInt(
+          readStoredValue(widthStorageKey) ?? "",
+          10,
+        );
+        setDirectoryWidth(
+          Number.isFinite(storedWidth) ? storedWidth : defaultWidth,
+        );
+        setDirectoryCollapsed(
+          readStoredValue(collapsedStorageKey) === "true",
+        );
+
+        directoryToggle.addEventListener("click", () => {
+          const collapsed = !directoryMain.classList.contains(
+            "directory-collapsed",
+          );
+          setDirectoryCollapsed(collapsed, true);
+        });
+
+        const resizeFromPointer = (clientX: number) => {
+          const mainLeft = directoryMain.getBoundingClientRect().left;
+          setDirectoryWidth(clientX - mainLeft);
+        };
+
+        const stopResizing = (pointerId: number) => {
+          if (resizingPointer !== pointerId) return;
+          resizingPointer = undefined;
+          document.body.classList.remove("directory-resizing");
+          storeValue(widthStorageKey, String(directoryWidth));
+        };
+
+        directoryResizer.addEventListener("pointerdown", (event) => {
+          if (event.button !== 0) return;
+          resizingPointer = event.pointerId;
+          directoryResizer.setPointerCapture(event.pointerId);
+          document.body.classList.add("directory-resizing");
+          resizeFromPointer(event.clientX);
+          event.preventDefault();
+        });
+
+        directoryResizer.addEventListener("pointermove", (event) => {
+          if (resizingPointer !== event.pointerId) return;
+          resizeFromPointer(event.clientX);
+        });
+
+        directoryResizer.addEventListener("pointerup", (event) => {
+          stopResizing(event.pointerId);
+        });
+
+        directoryResizer.addEventListener("pointercancel", (event) => {
+          stopResizing(event.pointerId);
+        });
+
+        directoryResizer.addEventListener("lostpointercapture", (event) => {
+          stopResizing(event.pointerId);
+        });
+
+        directoryResizer.addEventListener("keydown", (event) => {
+          let nextWidth = directoryWidth;
+          if (event.key === "ArrowLeft") nextWidth -= 16;
+          else if (event.key === "ArrowRight") nextWidth += 16;
+          else if (event.key === "Home") nextWidth = minimumWidth;
+          else if (event.key === "End") nextWidth = maximumWidth();
+          else return;
+
+          setDirectoryWidth(nextWidth, true);
+          event.preventDefault();
+        });
+
+        window.addEventListener("resize", () => {
+          setDirectoryWidth(directoryWidth);
+        });
+      }
     }
   </script>
 </BaseLayout>
-

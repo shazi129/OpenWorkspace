@@ -20,7 +20,7 @@ const { currentSlug, nodes } = Astro.props;
         return (
           <li class="directory-node">
             <details open={containsCurrent}>
-              <summary>{node.label}</summary>
+              <summary title={node.label}><span>{node.label}</span></summary>
               <DirectoryTree
                 nodes={node.children ?? []}
                 currentSlug={currentSlug}
@@ -35,6 +35,7 @@ const { currentSlug, nodes } = Astro.props;
           <a
             href={node.href}
             aria-current={node.slug === currentSlug ? "page" : undefined}
+            title={node.label}
           >
             {node.label}
           </a>

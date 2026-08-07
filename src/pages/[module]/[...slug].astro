@@ -1,9 +1,12 @@
 ---
 import { getEntry, render } from "astro:content";
+import type { MarkdownHeading } from "astro";
+import ArticleToc from "../../components/ArticleToc.astro";
 import {
   getContentRoutePaths,
   loadSiteManifest,
 } from "../../core/content-loader";
+import { TOC_METADATA_KEY } from "../../markdown/toc-marker";
 import type { ContentRouteProps } from "../../core/types";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout.astro";
 
@@ -22,6 +25,8 @@ if (!activeModule) {
 }
 
 let MarkdownContent: Awaited<ReturnType<typeof render>>["Content"] | undefined;
+let articleHeadings: MarkdownHeading[] = [];
+let showArticleToc = false;
 let pageTitle = route.label;
 
 if (route.kind === "markdown") {
@@ -31,6 +36,10 @@ if (route.kind === "markdown") {
 
   const rendered = await render(entry);
   MarkdownContent = rendered.Content;
+  articleHeadings = rendered.headings.filter((heading) => heading.depth >= 2);
+  showArticleToc =
+    rendered.remarkPluginFrontmatter[TOC_METADATA_KEY] === true &&
+    articleHeadings.length > 0;
   pageTitle = entry.data.title ?? pageTitle;
 }
 ---
@@ -43,9 +52,12 @@ if (route.kind === "markdown") {
 >
   {
     MarkdownContent ? (
-      <article class="markdown-content">
-        <MarkdownContent />
-      </article>
+      <div class:list={["markdown-page", { "has-article-toc": showArticleToc }]}>
+        {showArticleToc && <ArticleToc headings={articleHeadings} />}
+        <article class="markdown-content">
+          <MarkdownContent />
+        </article>
+      </div>
     ) : (
       <iframe
         class="html-tool-frame"
@@ -56,4 +68,3 @@ if (route.kind === "markdown") {
     )
   }
 </WorkspaceLayout>
-
