@@ -6,6 +6,5 @@
   "icon": "./icon.svg",
   "contentDir": "./content",
   "showDirectoryTree": true,
-  "index": "index.html"
+  "index": "content/index.html"
 }
-

@@ -10,4 +10,3 @@ description: OpenWorkspace 的默认介绍页面
 ## 关于 OpenWorkspace
 
 OpenWorkspace 会在构建时扫描模块配置和内容，自动生成导航、目录树和独立页面 URL。
-

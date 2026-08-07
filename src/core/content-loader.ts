@@ -110,6 +110,7 @@ function buildContentFiles(
   moduleId: string,
   moduleDir: string,
   contentDir: string,
+  dataRoot = DATA_ROOT,
 ): ContentFile[] {
   return listFiles(contentDir).flatMap((absolutePath) => {
     const kind = contentKind(absolutePath);
@@ -125,7 +126,7 @@ function buildContentFiles(
         absolutePath,
         entryId:
           kind === "markdown"
-            ? stripContentExtension(toPosix(path.relative(DATA_ROOT, absolutePath)))
+            ? stripContentExtension(toPosix(path.relative(dataRoot, absolutePath)))
             : undefined,
         href: contentHref(moduleId, slug),
         kind,
@@ -137,6 +138,33 @@ function buildContentFiles(
       },
     ];
   });
+}
+
+function buildModuleIndexFile(
+  moduleId: string,
+  moduleDir: string,
+  indexPath: string,
+  dataRoot = DATA_ROOT,
+): ContentFile {
+  const kind = contentKind(indexPath);
+  if (!kind) {
+    throw new Error(`模块 ${moduleId} 的 index 必须是 Markdown 或 HTML 文件`);
+  }
+
+  const relativePath = toPosix(path.relative(moduleDir, indexPath));
+  return {
+    absolutePath: indexPath,
+    entryId:
+      kind === "markdown"
+        ? stripContentExtension(toPosix(path.relative(dataRoot, indexPath)))
+        : undefined,
+    href: contentHref(moduleId, ""),
+    kind,
+    label: path.basename(indexPath, path.extname(indexPath)),
+    rawUrl: kind === "html" ? rawAssetUrl(moduleId, relativePath) : undefined,
+    relativePath,
+    slug: "",
+  };
 }
 
 function buildTree(
@@ -203,7 +231,7 @@ function validateModulePaths(
 ): { contentDir: string; iconPath: string; indexPath: string } {
   const contentDir = resolveInside(moduleDir, config.contentDir, "contentDir");
   const iconPath = resolveInside(moduleDir, config.icon, "icon");
-  const indexPath = resolveInside(contentDir, config.index, "index");
+  const indexPath = resolveInside(moduleDir, config.index, "index");
 
   for (const [label, target] of [
     ["contentDir", contentDir],
@@ -219,6 +247,16 @@ function validateModulePaths(
     throw new Error(`模块 ${config.id} 的 contentDir 必须是目录`);
   }
 
+  const legacyContentIndex = listFiles(contentDir).find(
+    (filePath) =>
+      toPosix(path.relative(contentDir, filePath)).toLowerCase() === "index.md",
+  );
+  if (legacyContentIndex) {
+    throw new Error(
+      `模块 ${config.id} 的 contentDir 根目录不能包含 index.md，请将它移动到模块目录`,
+    );
+  }
+
   if (!contentExtensions.has(path.extname(indexPath).toLowerCase())) {
     throw new Error(`模块 ${config.id} 的 index 必须是 Markdown 或 HTML 文件`);
   }
@@ -226,7 +264,11 @@ function validateModulePaths(
   return { contentDir, iconPath, indexPath };
 }
 
-function loadModule(moduleDir: string, directoryName: string): ModuleManifest | undefined {
+function loadModule(
+  moduleDir: string,
+  directoryName: string,
+  dataRoot: string,
+): ModuleManifest | undefined {
   const configPath = path.join(moduleDir, "config.json");
   if (!existsSync(configPath)) return undefined;
 
@@ -239,13 +281,28 @@ function loadModule(moduleDir: string, directoryName: string): ModuleManifest | 
   if (config.access !== "public") return undefined;
 
   const { contentDir, iconPath, indexPath } = validateModulePaths(moduleDir, config);
-  const contentFiles = buildContentFiles(config.id, moduleDir, contentDir);
-  const indexFile = contentFiles.find(
+  const scannedContentFiles = buildContentFiles(
+    config.id,
+    moduleDir,
+    contentDir,
+    dataRoot,
+  );
+  const contentIndexFile = scannedContentFiles.find(
     (file) => path.resolve(file.absolutePath) === path.resolve(indexPath),
   );
+  const indexFile =
+    contentIndexFile ??
+    buildModuleIndexFile(config.id, moduleDir, indexPath, dataRoot);
+  const contentFiles = contentIndexFile
+    ? scannedContentFiles
+    : [indexFile, ...scannedContentFiles];
 
-  if (!indexFile) {
-    throw new Error(`模块 ${config.id} 的 index 没有被识别为可展示内容`);
+  const duplicateSlug = contentFiles.find(
+    (file, index) =>
+      contentFiles.findIndex((candidate) => candidate.slug === file.slug) !== index,
+  );
+  if (duplicateSlug) {
+    throw new Error(`模块 ${config.id} 存在重复内容 URL：${duplicateSlug.href}`);
   }
 
   const iconRelativePath = toPosix(path.relative(moduleDir, iconPath));
@@ -262,13 +319,15 @@ function loadModule(moduleDir: string, directoryName: string): ModuleManifest | 
   };
 }
 
-export function loadSiteManifest(): SiteManifest {
-  const globalConfigPath = path.join(DATA_ROOT, "config.json");
+export function loadSiteManifest(dataRoot = DATA_ROOT): SiteManifest {
+  const globalConfigPath = path.join(dataRoot, "config.json");
   const globalConfig = parseGlobalConfig(readJson(globalConfigPath));
 
-  const modules = readdirSync(DATA_ROOT, { withFileTypes: true })
+  const modules = readdirSync(dataRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
-    .map((entry) => loadModule(path.join(DATA_ROOT, entry.name), entry.name))
+    .map((entry) =>
+      loadModule(path.join(dataRoot, entry.name), entry.name, dataRoot),
+    )
     .filter((module): module is ModuleManifest => Boolean(module))
     .sort(
       (left, right) =>
@@ -333,6 +392,9 @@ export function getRawAssetRoutePaths() {
     const iconPath = resolveInside(module.absoluteModuleDir, module.icon, "icon");
     const assetPaths = [
       iconPath,
+      ...module.contentFiles
+        .filter((file) => file.kind === "html")
+        .map((file) => file.absolutePath),
       ...listFiles(module.absoluteContentDir).filter(
         (filePath) => path.extname(filePath).toLowerCase() !== ".md",
       ),

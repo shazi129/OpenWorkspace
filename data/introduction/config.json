@@ -5,7 +5,5 @@
   "access": "public",
   "icon": "./icon.svg",
   "contentDir": "./content",
-  "showDirectoryTree": false,
-  "index": "index.md"
+  "showDirectoryTree": false
 }
-

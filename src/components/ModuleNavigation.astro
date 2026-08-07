@@ -19,7 +19,13 @@ const { activeModuleId, modules } = Astro.props;
             href={module.href}
             aria-current={module.id === activeModuleId ? "page" : undefined}
           >
-            <img src={module.iconUrl} alt="" width="44" height="44" />
+            <img
+              class="module-icon"
+              src={module.iconUrl}
+              alt=""
+              width="38"
+              height="38"
+            />
             <span>{module.title}</span>
           </a>
         </li>
@@ -27,4 +33,3 @@ const { activeModuleId, modules } = Astro.props;
     }
   </ul>
 </nav>
-

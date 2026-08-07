@@ -65,6 +65,7 @@ const documentTitle = `${pageTitle} · ${site.title}`;
               id="directory-tree"
               aria-label={`${activeModule.title}目录`}
               data-directory-sidebar
+              data-directory-module={activeModule.id}
             >
               <DirectoryTree nodes={activeModule.tree} currentSlug={currentSlug} />
             </aside>
@@ -167,8 +168,72 @@ const documentTitle = `${pageTitle} · ${site.title}`;
         const defaultWidth = 260;
         const widthStorageKey = "openworkspace.directoryTree.width";
         const collapsedStorageKey = "openworkspace.directoryTree.collapsed";
+        const navigationStorageKey = "openworkspace.directoryTree.navigation";
         let directoryWidth = defaultWidth;
         let resizingPointer: number | undefined;
+
+        const directoryDetails = Array.from(
+          directorySidebar.querySelectorAll<HTMLDetailsElement>(
+            "details[data-directory-slug]",
+          ),
+        );
+        const moduleId = directorySidebar.dataset.directoryModule;
+
+        try {
+          const storedNavigation = window.sessionStorage.getItem(
+            navigationStorageKey,
+          );
+          window.sessionStorage.removeItem(navigationStorageKey);
+          if (storedNavigation) {
+            const navigation = JSON.parse(storedNavigation) as {
+              moduleId?: string;
+              openSlugs?: string[];
+            };
+            if (
+              navigation.moduleId === moduleId &&
+              Array.isArray(navigation.openSlugs)
+            ) {
+              const openSlugs = new Set(navigation.openSlugs);
+              directoryDetails.forEach((details) => {
+                details.open = openSlugs.has(details.dataset.directorySlug ?? "");
+              });
+            }
+          }
+        } catch {
+          // 无法使用会话存储时，保留服务端根据当前 URL 生成的默认展开状态。
+        }
+
+        directorySidebar.addEventListener("click", (event) => {
+          if (
+            !(event instanceof MouseEvent) ||
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          const link = target.closest<HTMLAnchorElement>("a[data-directory-link]");
+          if (!link || !moduleId) return;
+
+          try {
+            window.sessionStorage.setItem(
+              navigationStorageKey,
+              JSON.stringify({
+                moduleId,
+                openSlugs: directoryDetails
+                  .filter((details) => details.open)
+                  .map((details) => details.dataset.directorySlug),
+              }),
+            );
+          } catch {
+            // 无法使用会话存储时，导航仍按默认行为继续。
+          }
+        });
 
         const readStoredValue = (key: string) => {
           try {
