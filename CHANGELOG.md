@@ -26,6 +26,10 @@
 - 模块导航 `order` 支持正数顶部排序与负数底部排序，`-1` 表示最靠近底部。
 - 设置模块改为不在工具栏展示，只能通过 `/settings/` 直接访问。
 
+### Fixed
+
+- 将 Markdown 中的 Windows 图片路径改为跨平台相对路径，修复 Linux 构建时的 `ImageNotFound`。
+
 ## 2026-08-07
 
 ### Added

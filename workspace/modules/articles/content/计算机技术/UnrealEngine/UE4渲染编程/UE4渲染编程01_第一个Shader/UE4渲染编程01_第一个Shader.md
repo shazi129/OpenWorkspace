@@ -18,7 +18,7 @@ Tags: Shader 渲染
 
 3. 选择创建一个空插件，输入插件名（我用的是ShaderTest），不要勾选引擎插件，点**Create Plugin**创建。成功后工程目录下**Plugin/ShaderTest**就是插件的根目录
 
-   ![image-20201128171041665](.\image-20201128171041665.png)
+   ![image-20201128171041665](./image-20201128171041665.png)
 
 4. 关闭UE4 Editor
 
