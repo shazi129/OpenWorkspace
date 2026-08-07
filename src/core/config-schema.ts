@@ -27,8 +27,26 @@ export const moduleConfigSchema = z
     contentDir: relativePathSchema.default("./content"),
     showDirectoryTree: z.boolean().default(false),
     index: relativePathSchema.default("index.md"),
+    runtime: z.enum(["static", "client", "server"]).default("static"),
+    serverEntry: relativePathSchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((config, context) => {
+    if (config.runtime === "server" && !config.serverEntry) {
+      context.addIssue({
+        code: "custom",
+        message: "runtime 为 server 时必须配置 serverEntry",
+        path: ["serverEntry"],
+      });
+    }
+    if (config.runtime !== "server" && config.serverEntry) {
+      context.addIssue({
+        code: "custom",
+        message: "只有 server 模块可以配置 serverEntry",
+        path: ["serverEntry"],
+      });
+    }
+  });
 
 export type GlobalConfig = z.infer<typeof globalConfigSchema>;
 export type ModuleConfig = z.infer<typeof moduleConfigSchema>;
@@ -40,4 +58,3 @@ export function parseGlobalConfig(input: unknown): GlobalConfig {
 export function parseModuleConfig(input: unknown): ModuleConfig {
   return moduleConfigSchema.parse(input);
 }
-

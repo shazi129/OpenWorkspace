@@ -4,3 +4,6 @@ dist/
 .DS_Store
 *.log
 .codex-tmp-nginx-verify/
+workspace/storage/*
+!workspace/storage/.gitignore
+!workspace/storage/README.md

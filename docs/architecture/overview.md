@@ -2,17 +2,18 @@
 
 ## 系统边界
 
-OpenWorkspace 在构建期读取本地文件系统，把公开内容转换成静态站点。运行时没有数据库、内容 API 或常驻 Node.js 服务。
+OpenWorkspace 在构建期读取私有工作空间，把公开页面转换成静态站点。`static`/`client` 模块可只发布 `dist/`；`server` 模块和全局服务由可选 Node API 宿主运行。
 
 ```text
 内容维护边界                         框架实现边界
 
-data/                                src/
+workspace/                           src/
 ├─ config.json                       ├─ core/
-├─ <module>/config.json              ├─ components/
-├─ <module>/content/**/*   ───────▶  ├─ layouts/
-└─ <module>/icon.*                   ├─ markdown/
-                                     └─ pages/
+├─ modules/<module>/**/*   ───────▶  ├─ components/
+├─ services/**/*                     ├─ layouts/
+└─ storage/                          ├─ markdown/
+                                     ├─ pages/
+                                     └─ server/
                                               │
                                               ▼
                                             dist/
@@ -32,7 +33,7 @@ data/                                src/
 ```text
 BaseLayout
 └─ WorkspaceLayout
-   ├─ ModuleNavigation
+   ├─ ModuleNavigation + SettingsControl
    └─ workspace-main
       ├─ DirectoryTree（按模块配置启用）
       └─ content-panel
@@ -47,11 +48,13 @@ BaseLayout
 - 当前只构建 `access: "public"` 的模块。
 - HTML 工具运行在 sandbox iframe 中，资源响应附带 CSP 和 `nosniff`。
 - 静态站点无法提供真正私有内容；认证模块必须由未来的服务端方案实现。
+- Nginx不得把 `workspace/services/`、模块 `server/` 或 `workspace/storage/` 作为静态目录发布。
 
 ## 模块文档
 
 - [内容与路由管线](modules/content-pipeline.md)
 - [工作区 UI](modules/workspace-ui.md)
 - [Markdown 渲染](modules/markdown-rendering.md)
+- [私有服务运行时](modules/service-runtime.md)
 
 完整配置、路由和部署设计见[技术方案](../技术方案.md)。

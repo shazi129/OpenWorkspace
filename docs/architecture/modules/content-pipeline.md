@@ -2,7 +2,7 @@
 
 ## 职责
 
-该模块把 `data/` 文件系统转换为可供 Astro 构建使用的强类型清单、内容页面参数和资源页面参数。
+该模块把 `workspace/modules/` 转换为可供 Astro 构建使用的强类型清单、内容页面参数和资源页面参数。
 
 ## 主要文件
 
@@ -18,8 +18,8 @@
 
 `loadSiteManifest()` 是主要入口：
 
-1. 解析 `data/config.json`。
-2. 枚举一级模块目录。
+1. 解析 `workspace/config.json`。
+2. 枚举 `workspace/modules/` 下的模块目录。
 3. 要求目录名与模块 `id` 一致。
 4. 排除非 `public` 模块。
 5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部且存在。
@@ -48,7 +48,8 @@
 
 ## 不变量
 
-- `DATA_ROOT` 固定为运行目录下的 `data/`。
+- `WORKSPACE_ROOT` 默认是运行目录下的 `workspace/`，可通过 `OPENWORKSPACE_WORKSPACE_ROOT` 覆盖。
+- `services/`、模块 `server/` 和 `storage/` 不参与静态资源扫描。
 - 路径进入清单前必须经过模块边界校验。
 - 符号链接不进入内容或资源路由。
 - 非公开模块不能生成页面、导航或静态资源。

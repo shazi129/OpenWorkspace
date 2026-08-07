@@ -1,6 +1,6 @@
 # OpenWorkspace
 
-OpenWorkspace 是一个由文件内容驱动的静态个人工作空间。使用者只需维护 `data/` 中的 Markdown、HTML 和资源文件，框架会生成模块导航、目录树、文章页面和静态资源路由。
+OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。使用者在 `workspace/` 中维护模块、页面、内容和服务，框架生成静态站点，并通过可选 API 宿主运行服务端模块。
 
 核心原则：**OpenWorkspace 不拥有用户数据，工作区文件系统是唯一事实来源。**
 
@@ -11,6 +11,7 @@ OpenWorkspace 是一个由文件内容驱动的静态个人工作空间。使用
 - 开发和验证流程：[工作流](docs/agent/WORKFLOW.md)
 - 完整技术设计：[技术方案](docs/技术方案.md)
 - 安装和内容创作：[安装文档](docs/安装文档.md)
+- Nginx 与 systemd 示例：[部署配置](deploy/)
 - 用户可见变化：[CHANGELOG](CHANGELOG.md)
 
 ## 常用命令
@@ -21,4 +22,5 @@ npm run dev
 npm run check
 npm test
 npm run build
+npm run api
 ```

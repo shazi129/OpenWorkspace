@@ -12,7 +12,8 @@
 | 修改目录树布局与交互 | [`目录树 spec`](../specs/directory-tree.md)、[`工作区 UI`](../architecture/modules/workspace-ui.md) | `WorkspaceLayout.astro`、`DirectoryTree.astro`、`global.css` |
 | 修改 Markdown 或 `[TOC]` | [`Markdown TOC spec`](../specs/markdown-toc.md)、[`Markdown 渲染模块`](../architecture/modules/markdown-rendering.md) | `toc-marker.ts`、`[...slug].astro`、`ArticleToc.astro` |
 | 修改 HTML 工具或资源安全 | [`内容加载模块`](../architecture/modules/content-pipeline.md)、[`技术方案`](../技术方案.md) | `openworkspace-assets/.../[...path].ts` |
-| 添加文章、模块或部署站点 | [`安装与内容创作`](../安装文档.md)、[`data 说明`](../../data/README.md) | `data/` |
+| 添加文章、模块或部署站点 | [`安装与内容创作`](../安装文档.md)、[`workspace 说明`](../../workspace/README.md) | `workspace/`、`deploy/` |
+| 修改 API、动态模块或重新生成服务 | [`服务运行时`](../architecture/modules/service-runtime.md)、[`重新生成 spec`](../specs/rebuild-settings.md) | `src/server/`、`workspace/services/`、模块 `serverEntry` |
 | 修改移动端或视觉设计 | [`工作区 UI`](../architecture/modules/workspace-ui.md)、[`原始设计文档`](../../设计文档/设计文档.md) | `WorkspaceLayout.astro`、`global.css` |
 | 了解设计原因 | [`ADR 索引`](../adr/README.md) | 相关 Git 历史 |
 | 了解近期变化 | [`CHANGELOG`](../../CHANGELOG.md)、运行 `npm run context` | `git log`、`git show` |

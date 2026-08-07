@@ -21,7 +21,10 @@ import type {
 
 // Astro 会把构建代码打包到 dist/.prerender，不能用 import.meta.url
 // 反推项目根目录。所有 CLI 命令均从项目根目录运行，因此以 cwd 为准。
-export const DATA_ROOT = path.resolve(process.cwd(), "data");
+export const WORKSPACE_ROOT = path.resolve(
+  process.env.OPENWORKSPACE_WORKSPACE_ROOT ??
+    path.join(process.cwd(), "workspace"),
+);
 
 const contentExtensions = new Set([".md", ".html", ".htm"]);
 const collator = new Intl.Collator("zh-CN", {
@@ -110,7 +113,7 @@ function buildContentFiles(
   moduleId: string,
   moduleDir: string,
   contentDir: string,
-  dataRoot = DATA_ROOT,
+  modulesRoot: string,
 ): ContentFile[] {
   return listFiles(contentDir).flatMap((absolutePath) => {
     const kind = contentKind(absolutePath);
@@ -126,7 +129,9 @@ function buildContentFiles(
         absolutePath,
         entryId:
           kind === "markdown"
-            ? stripContentExtension(toPosix(path.relative(dataRoot, absolutePath)))
+            ? stripContentExtension(
+                toPosix(path.relative(modulesRoot, absolutePath)),
+              )
             : undefined,
         href: contentHref(moduleId, slug),
         kind,
@@ -144,7 +149,7 @@ function buildModuleIndexFile(
   moduleId: string,
   moduleDir: string,
   indexPath: string,
-  dataRoot = DATA_ROOT,
+  modulesRoot: string,
 ): ContentFile {
   const kind = contentKind(indexPath);
   if (!kind) {
@@ -156,7 +161,7 @@ function buildModuleIndexFile(
     absolutePath: indexPath,
     entryId:
       kind === "markdown"
-        ? stripContentExtension(toPosix(path.relative(dataRoot, indexPath)))
+        ? stripContentExtension(toPosix(path.relative(modulesRoot, indexPath)))
         : undefined,
     href: contentHref(moduleId, ""),
     kind,
@@ -261,13 +266,26 @@ function validateModulePaths(
     throw new Error(`模块 ${config.id} 的 index 必须是 Markdown 或 HTML 文件`);
   }
 
+  if (config.runtime === "server" && config.serverEntry) {
+    const serverEntryPath = resolveInside(
+      moduleDir,
+      config.serverEntry,
+      "serverEntry",
+    );
+    if (!existsSync(serverEntryPath) || !statSync(serverEntryPath).isFile()) {
+      throw new Error(
+        `模块 ${config.id} 的 serverEntry 不存在或不是文件：${serverEntryPath}`,
+      );
+    }
+  }
+
   return { contentDir, iconPath, indexPath };
 }
 
 function loadModule(
   moduleDir: string,
   directoryName: string,
-  dataRoot: string,
+  modulesRoot: string,
 ): ModuleManifest | undefined {
   const configPath = path.join(moduleDir, "config.json");
   if (!existsSync(configPath)) return undefined;
@@ -285,14 +303,14 @@ function loadModule(
     config.id,
     moduleDir,
     contentDir,
-    dataRoot,
+    modulesRoot,
   );
   const contentIndexFile = scannedContentFiles.find(
     (file) => path.resolve(file.absolutePath) === path.resolve(indexPath),
   );
   const indexFile =
     contentIndexFile ??
-    buildModuleIndexFile(config.id, moduleDir, indexPath, dataRoot);
+    buildModuleIndexFile(config.id, moduleDir, indexPath, modulesRoot);
   const contentFiles = contentIndexFile
     ? scannedContentFiles
     : [indexFile, ...scannedContentFiles];
@@ -319,14 +337,19 @@ function loadModule(
   };
 }
 
-export function loadSiteManifest(dataRoot = DATA_ROOT): SiteManifest {
-  const globalConfigPath = path.join(dataRoot, "config.json");
+export function loadSiteManifest(workspaceRoot = WORKSPACE_ROOT): SiteManifest {
+  const globalConfigPath = path.join(workspaceRoot, "config.json");
   const globalConfig = parseGlobalConfig(readJson(globalConfigPath));
+  const modulesRoot = path.join(workspaceRoot, "modules");
 
-  const modules = readdirSync(dataRoot, { withFileTypes: true })
+  if (!existsSync(modulesRoot) || !statSync(modulesRoot).isDirectory()) {
+    throw new Error(`workspace/modules 不存在：${modulesRoot}`);
+  }
+
+  const modules = readdirSync(modulesRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
     .map((entry) =>
-      loadModule(path.join(dataRoot, entry.name), entry.name, dataRoot),
+      loadModule(path.join(modulesRoot, entry.name), entry.name, modulesRoot),
     )
     .filter((module): module is ModuleManifest => Boolean(module))
     .sort(
@@ -335,7 +358,7 @@ export function loadSiteManifest(dataRoot = DATA_ROOT): SiteManifest {
     );
 
   if (modules.length === 0) {
-    throw new Error("data/ 中没有可公开展示的模块");
+    throw new Error("workspace/modules 中没有可公开展示的模块");
   }
 
   if (!modules.some((module) => module.id === globalConfig.defaultModule)) {

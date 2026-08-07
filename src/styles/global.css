@@ -71,9 +71,11 @@ summary {
   top: 0;
   z-index: 20;
   height: 100vh;
-  overflow-y: auto;
+  display: flex;
+  overflow: visible;
   border-right: 1px solid var(--border);
   background: #fbfcfe;
+  flex-direction: column;
 }
 
 .module-navigation ul,
@@ -88,6 +90,12 @@ summary {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem 0.65rem;
+}
+
+.module-navigation {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .module-link {
@@ -123,6 +131,91 @@ summary {
 .module-link[aria-current="page"] .module-icon {
   filter: brightness(0) saturate(100%) invert(47%) sepia(95%) saturate(2812%)
     hue-rotate(347deg) brightness(103%) contrast(101%);
+}
+
+.toolbar-settings {
+  position: relative;
+  padding: 0.65rem;
+  border-top: 1px solid var(--border);
+  background: #fbfcfe;
+}
+
+.settings-toggle {
+  display: flex;
+  width: 100%;
+  padding: 0.7rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #3f3554;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.settings-icon {
+  width: 38px;
+  height: 38px;
+}
+
+.settings-toggle:hover,
+.settings-toggle:focus-visible,
+.settings-toggle[aria-expanded="true"] {
+  color: #ff6422;
+  background: #fff4ef;
+}
+
+.settings-panel {
+  position: absolute;
+  bottom: 0.65rem;
+  left: calc(100% + 0.65rem);
+  z-index: 60;
+  width: 280px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 18%);
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-panel strong {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #344054;
+}
+
+.rebuild-button {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #ffb99a;
+  border-radius: 0.55rem;
+  color: #b93800;
+  background: #fff4ef;
+  cursor: pointer;
+}
+
+.rebuild-button:hover,
+.rebuild-button:focus-visible {
+  border-color: #ff6422;
+  background: #ffe7dc;
+}
+
+.rebuild-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.settings-status {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .workspace-main {
@@ -579,6 +672,24 @@ body.directory-resizing .directory-resizer::before {
     padding: 0.75rem;
     font-size: 1rem;
     text-align: left;
+  }
+
+  .toolbar-settings {
+    position: static;
+  }
+
+  .settings-toggle {
+    flex-direction: row;
+    gap: 0.9rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .settings-panel {
+    right: 0.75rem;
+    bottom: 5.25rem;
+    left: 0.75rem;
+    width: auto;
   }
 
   .workspace-main,

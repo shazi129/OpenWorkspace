@@ -12,6 +12,7 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
+    "api": "node scripts/api-server.mjs",
     "check": "astro check",
     "test": "vitest run",
     "test:watch": "vitest"

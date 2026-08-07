@@ -11,8 +11,28 @@ describe("配置校验", () => {
       icon: "./icon.svg",
       index: "index.md",
       order: 100,
+      runtime: "static",
       showDirectoryTree: false,
     });
+  });
+
+  it("要求 server 模块提供服务入口", () => {
+    expect(() =>
+      parseModuleConfig({
+        id: "stocks",
+        title: "股票",
+        runtime: "server",
+      }),
+    ).toThrow();
+
+    expect(
+      parseModuleConfig({
+        id: "stocks",
+        title: "股票",
+        runtime: "server",
+        serverEntry: "./server/index.mjs",
+      }),
+    ).toMatchObject({ runtime: "server", serverEntry: "./server/index.mjs" });
   });
 
   it("拒绝可能逃逸模块目录的绝对路径", () => {
@@ -32,4 +52,3 @@ describe("配置校验", () => {
     });
   });
 });
-

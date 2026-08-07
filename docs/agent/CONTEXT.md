@@ -4,18 +4,22 @@
 
 ## 工程目标
 
-OpenWorkspace 是一个由文件内容驱动的静态个人工作空间。内容维护者在 `data/` 中添加模块、Markdown、HTML 和资源文件，框架负责生成导航、目录树、页面 URL 和最终 `dist/` 静态站点。
+OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护者在 `workspace/` 中添加模块、Markdown、HTML、客户端页面和私有服务；框架生成 `dist/` 静态站点，可选 API 宿主运行服务端模块。
 
 核心原则：
 
-- `data/` 是用户内容的唯一事实来源。
+- `workspace/` 是用户模块、内容和服务的唯一事实来源。
+- `src/server/` 只提供通用 HTTP 宿主，不承载用户业务 API。
+- `workspace/storage/` 永远不进入 Git 或 `dist/`。
 - 展示框架不接管或复制用户正文。
 - 内容错误应在构建阶段暴露，不能静默生成残缺页面。
 - 当前阶段保持纯静态输出；私有内容必须等待服务端认证方案，不能仅靠前端隐藏。
 
 ## 当前功能
 
-- 从 `data/config.json` 和 `data/<module>/config.json` 加载站点及模块配置。
+- 从 `workspace/config.json` 和 `workspace/modules/<module>/config.json` 加载站点及模块配置。
+- 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。
+- `workspace/services/` 提供重新生成等全局私有服务。
 - 使用 Zod 校验配置、模块 ID、访问级别和相对路径。
 - 扫描 Markdown、HTML 及配套资源，生成静态内容和资源路由。
 - 生成模块导航和递归目录树；只有一个内容文件的目录会被折叠。
@@ -28,7 +32,7 @@ OpenWorkspace 是一个由文件内容驱动的静态个人工作空间。内容
 ## 数据流
 
 ```text
-data/config.json + data/<module>/**
+workspace/config.json + workspace/modules/<module>/**
                 │
                 ▼
 config-schema.ts + content-loader.ts
@@ -65,11 +69,14 @@ Astro 内容页面         静态资源路由
 
 | 路径 | 所有者与用途 |
 | --- | --- |
-| `data/` | 内容维护者；站点配置、模块、正文和附件 |
+| `workspace/modules/` | 私有模块、页面、正文、附件和模块专属服务 |
+| `workspace/services/` | 重新生成等全局私有服务 |
+| `workspace/storage/` | 数据库、缓存和任务状态；不发布、不提交 |
 | `src/` | 框架维护者；加载、路由、组件、交互和样式 |
 | `tests/unit/` | 配置、内容树和 Markdown 扩展测试 |
 | `tests/e2e/` | 预留端到端测试目录 |
 | `docs/` | 公共工程知识、架构、spec 和 ADR |
+| `deploy/` | Nginx 反向代理与 systemd 常驻服务示例 |
 | `设计文档/` | UI 原始设计、图片和 draw.io 源文件 |
 | `dist/` | Astro 生产构建产物，不进入版本控制 |
 | `.astro/` | Astro 生成的内容与类型缓存，不直接编辑 |
@@ -96,6 +103,7 @@ npm run check     # Astro/TypeScript 检查
 npm test          # Vitest 单元测试
 npm run build     # 检查并生成 dist/
 npm run preview   # 预览生产构建
+npm run api       # 启动 workspace 私有服务宿主
 ```
 
 ## 当前非目标

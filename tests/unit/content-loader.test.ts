@@ -84,21 +84,21 @@ describe("模块首页", () => {
     );
     createFile(
       root,
-      "articles/config.json",
+      "modules/articles/config.json",
       JSON.stringify({
         id: "articles",
         title: "文章",
         ...(index ? { index } : {}),
       }),
     );
-    createFile(root, "articles/icon.svg", "<svg></svg>");
+    createFile(root, "modules/articles/icon.svg", "<svg></svg>");
     return root;
   }
 
   it("默认读取模块根目录 index.md 且不放入目录树", () => {
     const root = createModule();
-    createFile(root, "articles/index.md");
-    createFile(root, "articles/content/文章.md");
+    createFile(root, "modules/articles/index.md");
+    createFile(root, "modules/articles/content/文章.md");
 
     const module = loadSiteManifest(root).modules[0];
     expect(module.href).toBe("/articles/");
@@ -110,8 +110,8 @@ describe("模块首页", () => {
 
   it("允许把 content 下的内容文件配置为模块首页并定位目录树", () => {
     const root = createModule("content/开始.md");
-    createFile(root, "articles/content/开始.md");
-    createFile(root, "articles/content/其他.md");
+    createFile(root, "modules/articles/content/开始.md");
+    createFile(root, "modules/articles/content/其他.md");
 
     const module = loadSiteManifest(root).modules[0];
     expect(module.href).toBe("/articles/%E5%BC%80%E5%A7%8B/");
@@ -125,8 +125,8 @@ describe("模块首页", () => {
 
   it("拒绝 content 根目录中的 index.md", () => {
     const root = createModule();
-    createFile(root, "articles/index.md");
-    createFile(root, "articles/content/index.md");
+    createFile(root, "modules/articles/index.md");
+    createFile(root, "modules/articles/content/index.md");
 
     expect(() => loadSiteManifest(root)).toThrow(
       "contentDir 根目录不能包含 index.md",

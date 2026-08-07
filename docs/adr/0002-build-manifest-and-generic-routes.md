@@ -9,7 +9,7 @@
 
 ## 决定
 
-- 构建期扫描 `data/` 并生成内存中的 `SiteManifest`。
+- 构建期扫描私有工作区并生成内存中的 `SiteManifest`；当前路径由 ADR-0004 定为 `workspace/modules/`。
 - 使用 `src/pages/[module]/[...slug].astro` 和 `getStaticPaths()` 生成内容页面。
 - 使用独立通用资源路由生成图标、HTML 和附件响应。
 - 不向源码树写入按文章展开的页面代码。
@@ -18,7 +18,7 @@
 
 正面影响：
 
-- 新增内容只修改 `data/`。
+- 新增内容只修改 `workspace/modules/`。
 - URL 规则集中在内容加载器中测试和维护。
 - 静态产物可部署到普通文件服务器。
 

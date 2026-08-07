@@ -1,6 +1,7 @@
 ---
 import DirectoryTree from "../components/DirectoryTree.astro";
 import ModuleNavigation from "../components/ModuleNavigation.astro";
+import SettingsControl from "../components/SettingsControl.astro";
 import type { ModuleManifest, SiteManifest } from "../core/types";
 import BaseLayout from "./BaseLayout.astro";
 
@@ -40,6 +41,7 @@ const documentTitle = `${pageTitle} · ${site.title}`;
         modules={site.modules}
         activeModuleId={activeModule.id}
       />
+      <SettingsControl />
     </aside>
 
     <button
