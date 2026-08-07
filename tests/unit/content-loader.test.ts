@@ -110,6 +110,28 @@ describe("模块首页", () => {
     ]);
   });
 
+  it("允许只有模块首页且 contentDir 不存在", () => {
+    const root = createModule();
+    createFile(root, "modules/articles/index.md");
+
+    const module = loadSiteManifest(root).modules[0];
+    expect(module.contentFiles).toEqual([
+      expect.objectContaining({ href: "/articles/", slug: "" }),
+    ]);
+    expect(module.tree).toEqual([]);
+    expect(
+      getRawAssetRoutePaths(root).map((route) => route.params.path),
+    ).toEqual(["icon.svg"]);
+  });
+
+  it("contentDir 存在时仍要求它是目录", () => {
+    const root = createModule();
+    createFile(root, "modules/articles/index.md");
+    createFile(root, "modules/articles/content");
+
+    expect(() => loadSiteManifest(root)).toThrow("contentDir 必须是目录");
+  });
+
   it("允许把 content 下的内容文件配置为模块首页并定位目录树", () => {
     const root = createModule("content/开始.md");
     createFile(root, "modules/articles/content/开始.md");

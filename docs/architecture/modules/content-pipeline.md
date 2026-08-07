@@ -23,7 +23,7 @@
 2. 枚举 `workspace/modules/` 下的模块目录。
 3. 要求目录名与模块 `id` 一致。
 4. 排除 `publish: false` 或非 `public` 模块；保留只隐藏导航的 private 模块。
-5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部且存在。
+5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部；`icon` 和 `index` 必须存在，`contentDir` 不存在时按空目录处理，存在时必须是目录。
 6. 生成扁平 `contentFiles` 和递归 `tree`。
 7. 先排列正数 `order` 顶部组，再排列负数底部组；同值按标题排序，并确认默认模块存在。
 
@@ -35,6 +35,7 @@ Astro 内容集合复用清单中的已发布模块范围，因此 `publish: fal
 - 非 Markdown/HTML 文件不进入目录树。
 - 模块根 `index.md` 独立作为首页路由，不进入 `content/` 目录树。
 - 空目录不展示。
+- 模块只有首页时，`contentDir` 可以不存在，并生成空内容树。
 - 一个目录过滤资源文件后只有一个内容文件时，省略该目录并提升文件节点。
 - 折叠可以递归穿过多层单文件目录，但不会改变文件 `slug`、`href` 或真实路径。
 

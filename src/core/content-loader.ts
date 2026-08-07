@@ -111,6 +111,8 @@ function contentKind(filePath: string): ContentFile["kind"] | undefined {
 }
 
 function listFiles(directory: string): string[] {
+  if (!existsSync(directory)) return [];
+
   return readdirSync(directory, { withFileTypes: true })
     .sort((left, right) => collator.compare(left.name, right.name))
     .flatMap((entry): string[] => {
@@ -239,6 +241,7 @@ export function buildContentTree(
   contentRoot: string,
   moduleId: string,
 ): ContentTreeNode[] {
+  if (!existsSync(contentRoot)) return [];
   return buildTree(contentRoot, moduleId, contentRoot);
 }
 
@@ -251,7 +254,6 @@ function validateModulePaths(
   const indexPath = resolveInside(moduleDir, config.index, "index");
 
   for (const [label, target] of [
-    ["contentDir", contentDir],
     ["icon", iconPath],
     ["index", indexPath],
   ] as const) {
@@ -260,7 +262,7 @@ function validateModulePaths(
     }
   }
 
-  if (!statSync(contentDir).isDirectory()) {
+  if (existsSync(contentDir) && !statSync(contentDir).isDirectory()) {
     throw new Error(`模块 ${config.id} 的 contentDir 必须是目录`);
   }
 
