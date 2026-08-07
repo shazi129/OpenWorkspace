@@ -7,13 +7,18 @@ interface Props {
 }
 
 const { activeModuleId, modules } = Astro.props;
+const firstBottomModuleIndex = modules.findIndex((module) => module.order < 0);
 ---
 
 <nav class="module-navigation" aria-label="功能模块">
   <ul>
     {
-      modules.map((module) => (
-        <li>
+      modules.map((module, index) => (
+        <li
+          class:list={{
+            "module-bottom-start": index === firstBottomModuleIndex,
+          }}
+        >
           <a
             class="module-link"
             href={module.href}

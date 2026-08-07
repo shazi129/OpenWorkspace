@@ -19,10 +19,12 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护
 
 - 从 `workspace/config.json` 和 `workspace/modules/<module>/config.json` 加载站点及模块配置。
 - 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。
-- `workspace/services/` 提供重新生成等全局私有服务。
+- `workspace/services/` 提供工作区更新等全局私有服务。
+- `settings` 是 `order: -1` 的客户端模块，当前提供拉取仓库并重新构建的“更新”操作。
 - 使用 Zod 校验配置、模块 ID、访问级别和相对路径。
 - 扫描 Markdown、HTML 及配套资源，生成静态内容和资源路由。
 - 生成模块导航和递归目录树；只有一个内容文件的目录会被折叠。
+- 模块 `order` 支持正数从顶部排序、负数从底部排序，`0` 无效。
 - 目录树支持节点类型图标、展开状态、单行省略、拖动调整宽度和整体收起。
 - Markdown 支持标题锚点及独立 `[TOC]` 标记生成的文章目录。
 - Markdown 图片按正文宽度缩放并保持比例。
@@ -61,6 +63,7 @@ Astro 内容页面         静态资源路由
 | 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown/HTML 路由渲染 |
 | 资源页面 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 图标、附件和 HTML 资源响应 |
 | 工作区布局 | `src/layouts/WorkspaceLayout.astro` | 模块抽屉、目录栏拖动和收起交互 |
+| 更新交互 | `src/components/WorkspaceUpdateClient.astro` | 增强设置模块中的受认证更新操作 |
 | 目录树 | `src/components/DirectoryTree.astro` | 递归目录及当前页面状态 |
 | 文章目录 | `src/components/ArticleToc.astro` | 根据 Markdown headings 生成文章 TOC |
 | 全局样式 | `src/styles/global.css` | 桌面、移动端、目录树、正文和 TOC 样式 |
@@ -70,7 +73,7 @@ Astro 内容页面         静态资源路由
 | 路径 | 所有者与用途 |
 | --- | --- |
 | `workspace/modules/` | 私有模块、页面、正文、附件和模块专属服务 |
-| `workspace/services/` | 重新生成等全局私有服务 |
+| `workspace/services/` | 工作区更新等全局私有服务 |
 | `workspace/storage/` | 数据库、缓存和任务状态；不发布、不提交 |
 | `src/` | 框架维护者；加载、路由、组件、交互和样式 |
 | `tests/unit/` | 配置、内容树和 Markdown 扩展测试 |

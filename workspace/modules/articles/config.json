@@ -1,7 +1,7 @@
 {
   "id": "articles",
   "title": "文章",
-  "order": 20,
+  "order": 2,
   "access": "public",
   "icon": "./icon.svg",
   "contentDir": "./content",

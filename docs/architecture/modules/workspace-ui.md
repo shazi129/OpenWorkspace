@@ -10,6 +10,7 @@
 | --- | --- |
 | `src/layouts/WorkspaceLayout.astro` | 页面骨架、移动抽屉、目录宽度和收起交互 |
 | `src/components/ModuleNavigation.astro` | 一级模块导航 |
+| `src/components/WorkspaceUpdateClient.astro` | 增强设置页面中的更新操作 |
 | `src/components/DirectoryTree.astro` | 递归目录与文件链接 |
 | `src/styles/global.css` | 布局、状态、响应式和可访问性样式 |
 
@@ -27,6 +28,14 @@
 - 内置模块使用统一的圆角线性 SVG 图标，默认显示为深紫灰色。
 - 当前模块的标题和图标使用橙色，浅橙背景用于补充选中反馈。
 - 图标作为装饰内容使用空 `alt`，模块标题提供链接的可访问名称。
+- 正数 `order` 从导航顶部向下排列；负数模块靠底部排列，其中 `-1` 最靠近底部。
+- 首个负数模块使用弹性上边距分隔上下两组；内容溢出时由导航区域滚动。
+
+## 设置模块
+
+- `workspace/modules/settings/` 是 `order: -1` 的客户端模块，使用普通模块路由和选中态。
+- 设置页面的结构和文字位于工作区 Markdown；`WorkspaceUpdateClient.astro` 只增强带 `data-workspace-update` 标记的操作。
+- 更新令牌只保存在当前浏览器会话，页面和构建产物不包含令牌。
 
 ## 目录节点
 
@@ -45,4 +54,4 @@
 - 桌面拖动分隔条在移动端隐藏，目录仍可整体收起。
 - `prefers-reduced-motion` 会缩短动画。
 
-行为契约见[目录树 spec](../../specs/directory-tree.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。
+行为契约见[模块导航 spec](../../specs/module-navigation.md)和[目录树 spec](../../specs/directory-tree.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。

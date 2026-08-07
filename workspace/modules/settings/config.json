@@ -1,0 +1,11 @@
+{
+  "id": "settings",
+  "title": "设置",
+  "order": -1,
+  "access": "public",
+  "runtime": "client",
+  "icon": "./content/icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": false,
+  "index": "index.md"
+}

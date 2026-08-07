@@ -32,6 +32,18 @@ const collator = new Intl.Collator("zh-CN", {
   sensitivity: "base",
 });
 
+function compareModuleOrder(
+  left: ModuleManifest,
+  right: ModuleManifest,
+): number {
+  const leftIsBottom = left.order < 0;
+  const rightIsBottom = right.order < 0;
+
+  if (leftIsBottom !== rightIsBottom) return leftIsBottom ? 1 : -1;
+
+  return left.order - right.order || collator.compare(left.title, right.title);
+}
+
 function readJson(filePath: string): unknown {
   try {
     return JSON.parse(readFileSync(filePath, "utf8"));
@@ -352,10 +364,7 @@ export function loadSiteManifest(workspaceRoot = WORKSPACE_ROOT): SiteManifest {
       loadModule(path.join(modulesRoot, entry.name), entry.name, modulesRoot),
     )
     .filter((module): module is ModuleManifest => Boolean(module))
-    .sort(
-      (left, right) =>
-        left.order - right.order || collator.compare(left.title, right.title),
-    );
+    .sort(compareModuleOrder);
 
   if (modules.length === 0) {
     throw new Error("workspace/modules 中没有可公开展示的模块");

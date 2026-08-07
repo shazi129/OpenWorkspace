@@ -33,7 +33,8 @@ workspace/                           src/
 ```text
 BaseLayout
 └─ WorkspaceLayout
-   ├─ ModuleNavigation + SettingsControl
+   ├─ ModuleNavigation
+   ├─ WorkspaceUpdateClient
    └─ workspace-main
       ├─ DirectoryTree（按模块配置启用）
       └─ content-panel

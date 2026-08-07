@@ -21,7 +21,11 @@ export const moduleConfigSchema = z
       .min(1)
       .regex(/^[a-z0-9][a-z0-9-]*$/, "模块 id 只能包含小写字母、数字和连字符"),
     title: z.string().min(1),
-    order: z.number().int().default(100),
+    order: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, "order 不能为 0")
+      .default(100),
     access: z.enum(["public", "authenticated", "allowlist"]).default("public"),
     icon: relativePathSchema.default("./icon.svg"),
     contentDir: relativePathSchema.default("./content"),

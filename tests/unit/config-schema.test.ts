@@ -45,6 +45,12 @@ describe("配置校验", () => {
     ).toThrow();
   });
 
+  it("拒绝没有上下对齐语义的 order 0", () => {
+    expect(() =>
+      parseModuleConfig({ id: "articles", title: "文章", order: 0 }),
+    ).toThrow("order 不能为 0");
+  });
+
   it("要求配置唯一的默认模块", () => {
     expect(parseGlobalConfig({ defaultModule: "introduction" })).toMatchObject({
       defaultModule: "introduction",

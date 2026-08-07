@@ -54,4 +54,4 @@ Nginx 只公开 `dist/`，把 `/api/` 和 `/openworkspace-admin/` 反向代理�
 - 管理接口必须独立认证；数据库和服务代码不进入 `dist/`。
 - 命令执行使用固定可执行文件和参数，不接受客户端命令文本。
 
-行为契约见[重新生成设置](../../specs/rebuild-settings.md)，设计原因见 [ADR-0004](../../adr/0004-private-workspace-services.md)。
+行为契约见[设置模块与更新](../../specs/rebuild-settings.md)，设计原因见 [ADR-0004](../../adr/0004-private-workspace-services.md)。

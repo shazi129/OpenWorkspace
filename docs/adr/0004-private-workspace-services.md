@@ -33,6 +33,6 @@
 ## 关联内容
 
 - [私有服务运行时](../architecture/modules/service-runtime.md)
-- [重新生成设置](../specs/rebuild-settings.md)
+- [设置模块与更新](../specs/rebuild-settings.md)
 - [ADR-0001](0001-filesystem-content-source.md)
 - [ADR-0002](0002-build-manifest-and-generic-routes.md)

@@ -133,3 +133,39 @@ describe("模块首页", () => {
     );
   });
 });
+
+describe("模块导航排序", () => {
+  it("正数从顶部递增，负数按从底部的距离排列", () => {
+    const root = createContentRoot();
+    createFile(
+      root,
+      "config.json",
+      JSON.stringify({ defaultModule: "top-one" }),
+    );
+
+    for (const [id, title, order] of [
+      ["bottom-one", "底部第一", -1],
+      ["top-two", "顶部第二", 2],
+      ["bottom-three", "底部第三", -3],
+      ["top-one", "顶部第一", 1],
+      ["bottom-two", "底部第二", -2],
+    ] as const) {
+      createFile(
+        root,
+        `modules/${id}/config.json`,
+        JSON.stringify({ id, title, order }),
+      );
+      createFile(root, `modules/${id}/icon.svg`, "<svg></svg>");
+      createFile(root, `modules/${id}/index.md`);
+      createFile(root, `modules/${id}/content/内容.md`);
+    }
+
+    expect(loadSiteManifest(root).modules.map((module) => module.id)).toEqual([
+      "top-one",
+      "top-two",
+      "bottom-three",
+      "bottom-two",
+      "bottom-one",
+    ]);
+  });
+});
