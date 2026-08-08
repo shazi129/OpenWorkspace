@@ -6,6 +6,10 @@ import {
 } from "node:fs";
 import path from "node:path";
 import {
+  DEFAULT_CONTENT_TAG,
+  readContentMetadata,
+} from "./content-metadata";
+import {
   parseGlobalConfig,
   parseModuleConfig,
   type ModuleConfig,
@@ -110,6 +114,15 @@ function contentKind(filePath: string): ContentFile["kind"] | undefined {
   return undefined;
 }
 
+function metadataForContent(
+  absolutePath: string,
+  kind: ContentFile["kind"],
+) {
+  return kind === "markdown"
+    ? readContentMetadata(absolutePath)
+    : { tags: [DEFAULT_CONTENT_TAG] };
+}
+
 function listFiles(directory: string): string[] {
   if (!existsSync(directory)) return [];
 
@@ -137,10 +150,12 @@ function buildContentFiles(
     const slug = routeSlug(relativePath);
     const label = path.basename(relativePath, path.extname(relativePath));
     const moduleRelativePath = toPosix(path.relative(moduleDir, absolutePath));
+    const metadata = metadataForContent(absolutePath, kind);
 
     return [
       {
         absolutePath,
+        createTime: metadata.createTime,
         entryId:
           kind === "markdown"
             ? stripContentExtension(
@@ -154,6 +169,7 @@ function buildContentFiles(
           kind === "html" ? rawAssetUrl(moduleId, moduleRelativePath) : undefined,
         relativePath,
         slug,
+        tags: metadata.tags,
       },
     ];
   });
@@ -171,8 +187,10 @@ function buildModuleIndexFile(
   }
 
   const relativePath = toPosix(path.relative(moduleDir, indexPath));
+  const metadata = metadataForContent(indexPath, kind);
   return {
     absolutePath: indexPath,
+    createTime: metadata.createTime,
     entryId:
       kind === "markdown"
         ? stripContentExtension(toPosix(path.relative(modulesRoot, indexPath)))
@@ -183,21 +201,40 @@ function buildModuleIndexFile(
     rawUrl: kind === "html" ? rawAssetUrl(moduleId, relativePath) : undefined,
     relativePath,
     slug: "",
+    tags: metadata.tags,
   };
+}
+
+function earliestCreateTime(nodes: ContentTreeNode[]): string | undefined {
+  const timestamps = nodes.flatMap((node) =>
+    node.createTime ? [Date.parse(node.createTime)] : [],
+  );
+  return timestamps.length > 0
+    ? new Date(Math.min(...timestamps)).toISOString()
+    : undefined;
+}
+
+function compareTreeCreateTime(
+  left: ContentTreeNode,
+  right: ContentTreeNode,
+): number {
+  const leftTime = left.createTime
+    ? Date.parse(left.createTime)
+    : Number.NEGATIVE_INFINITY;
+  const rightTime = right.createTime
+    ? Date.parse(right.createTime)
+    : Number.NEGATIVE_INFINITY;
+
+  return rightTime - leftTime || collator.compare(left.label, right.label);
 }
 
 function buildTree(
   directory: string,
   moduleId: string,
   contentRoot: string,
+  contentByPath?: ReadonlyMap<string, ContentFile>,
 ): ContentTreeNode[] {
-  return readdirSync(directory, { withFileTypes: true })
-    .sort((left, right) => {
-      if (left.isDirectory() !== right.isDirectory()) {
-        return left.isDirectory() ? -1 : 1;
-      }
-      return collator.compare(left.name, right.name);
-    })
+  const nodes = readdirSync(directory, { withFileTypes: true })
     .flatMap((entry): ContentTreeNode[] => {
       if (entry.isSymbolicLink()) return [];
 
@@ -205,15 +242,22 @@ function buildTree(
       const relativePath = toPosix(path.relative(contentRoot, absolutePath));
 
       if (entry.isDirectory()) {
-        const children = buildTree(absolutePath, moduleId, contentRoot);
+        const children = buildTree(
+          absolutePath,
+          moduleId,
+          contentRoot,
+          contentByPath,
+        );
         if (children.length === 1 && children[0].kind !== "directory") {
           return children;
         }
 
+        const createTime = earliestCreateTime(children);
         return children.length
           ? [
               {
                 children,
+                ...(createTime ? { createTime } : {}),
                 kind: "directory" as const,
                 label: entry.name,
                 slug: toPosix(relativePath),
@@ -226,8 +270,13 @@ function buildTree(
       if (!kind) return [];
 
       const slug = routeSlug(relativePath);
+      const existingContent = contentByPath?.get(path.resolve(absolutePath));
+      const createTime = existingContent
+        ? existingContent.createTime
+        : metadataForContent(absolutePath, kind).createTime;
       return [
         {
+          ...(createTime ? { createTime } : {}),
           href: contentHref(moduleId, slug),
           kind,
           label: path.basename(entry.name, path.extname(entry.name)),
@@ -235,14 +284,22 @@ function buildTree(
         },
       ];
     });
+
+  return nodes.sort(compareTreeCreateTime);
 }
 
 export function buildContentTree(
   contentRoot: string,
   moduleId: string,
+  contentFiles?: readonly ContentFile[],
 ): ContentTreeNode[] {
   if (!existsSync(contentRoot)) return [];
-  return buildTree(contentRoot, moduleId, contentRoot);
+  const contentByPath = contentFiles
+    ? new Map(
+        contentFiles.map((file) => [path.resolve(file.absolutePath), file]),
+      )
+    : undefined;
+  return buildTree(contentRoot, moduleId, contentRoot, contentByPath);
 }
 
 function validateModulePaths(
@@ -348,7 +405,7 @@ function loadModule(
     href: indexFile.href,
     iconUrl: rawAssetUrl(config.id, iconRelativePath),
     indexSlug: indexFile.slug,
-    tree: buildContentTree(contentDir, config.id),
+    tree: buildContentTree(contentDir, config.id, scannedContentFiles),
   };
 }
 

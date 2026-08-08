@@ -156,6 +156,37 @@ describe("模块首页", () => {
       "contentDir 根目录不能包含 index.md",
     );
   });
+
+  it("按创建时间从近到远排序并以最早文章时间作为目录时间", () => {
+    const root = createContentRoot();
+    const markdown = (createTime?: string) =>
+      createTime
+        ? `---\ncreate: ${createTime}\n---\n\n# 正文`
+        : "# 正文";
+
+    createFile(root, "近期文章.md", markdown("2025-01-01 00:00:00"));
+    createFile(root, "较早文章.md", markdown("2020-01-01 00:00:00"));
+    createFile(root, "历史目录/目录中的新文章.md", markdown("2024-01-01"));
+    createFile(root, "历史目录/目录中的最早文章.md", markdown("2010-01-01"));
+    createFile(root, "未标时间.md", markdown());
+
+    const tree = buildContentTree(root, "articles");
+
+    expect(tree.map((node) => node.label)).toEqual([
+      "近期文章",
+      "较早文章",
+      "历史目录",
+      "未标时间",
+    ]);
+    expect(tree[2]).toMatchObject({
+      createTime: "2010-01-01T00:00:00.000Z",
+      kind: "directory",
+      children: [
+        expect.objectContaining({ label: "目录中的新文章" }),
+        expect.objectContaining({ label: "目录中的最早文章" }),
+      ],
+    });
+  });
 });
 
 describe("模块导航排序", () => {

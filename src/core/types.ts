@@ -4,6 +4,7 @@ export type ContentKind = "markdown" | "html";
 
 export interface ContentFile {
   absolutePath: string;
+  createTime?: string;
   entryId?: string;
   href: string;
   kind: ContentKind;
@@ -11,10 +12,12 @@ export interface ContentFile {
   rawUrl?: string;
   relativePath: string;
   slug: string;
+  tags: string[];
 }
 
 export interface ContentTreeNode {
   children?: ContentTreeNode[];
+  createTime?: string;
   href?: string;
   kind: "directory" | ContentKind;
   label: string;
@@ -50,4 +53,3 @@ export interface RawAssetRouteProps {
   absolutePath: string;
   contentType: string;
 }
-

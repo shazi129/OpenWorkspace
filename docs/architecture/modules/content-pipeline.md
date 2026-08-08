@@ -11,6 +11,7 @@
 | `src/core/config-schema.ts` | 全局/模块配置 schema、默认值、相对路径格式 |
 | `src/core/types.ts` | `ContentFile`、`ContentTreeNode`、`ModuleManifest` 等类型 |
 | `src/core/content-loader.ts` | 文件扫描、边界校验、树生成、URL 和静态路由参数 |
+| `src/core/content-metadata.ts` | 解析 `create`、规范化 `tags` 并提供旧文章默认值 |
 | `src/content.config.ts` | 已发布模块的 Markdown 集合、Frontmatter schema 和 entry ID |
 | `src/markdown/workspace-markdown-loader.ts` | 通过真实文件路径读取 Markdown，支持文件名中的 `#` |
 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 原始资源响应、安全响应头 |
@@ -24,14 +25,16 @@
 3. 要求目录名与模块 `id` 一致。
 4. 排除 `publish: false` 或非 `public` 模块；保留只隐藏导航的 private 模块。
 5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部；`icon` 和 `index` 必须存在，`contentDir` 不存在时按空目录处理，存在时必须是目录。
-6. 生成扁平 `contentFiles` 和递归 `tree`。
+6. 读取 Markdown Frontmatter，将 `create` 和 `tags` 写入扁平 `contentFiles`，再生成递归 `tree`。
 7. 先排列正数 `order` 顶部组，再排列负数底部组；同值按标题排序，并确认默认模块存在。
 
 Astro 内容集合复用清单中的已发布模块范围，因此 `publish: false`、`authenticated` 和 `allowlist` 模块的 Markdown 不参与内容同步。工程自定义 loader 使用绝对文件路径读取正文，用 `pathToFileURL()` 提供渲染上下文，并把存入 Astro 的相对 `filePath` 按路径段编码，避免正文读取和相对图片解析时把文件名中的 `#` 误解为 URL fragment。
 
 ## 内容树规则
 
-- 目录排在文件之前，同类按中文数字感知排序。
+- 同级目录和文件按创建时间从近到远统一排序；无时间节点排在有时间节点之后，时间相同时按中文数字感知名称排序。
+- 文件节点的时间来自 `create`；目录节点的时间是已填写时间的后代文章中的最早值。
+- `tags` 接受逗号分隔字符串或字符串数组，缺少时规范化为 `默认`，供后续搜索功能使用。
 - 非 Markdown/HTML 文件不进入目录树。
 - 模块根 `index.md` 独立作为首页路由，不进入 `content/` 目录树。
 - 空目录不展示。

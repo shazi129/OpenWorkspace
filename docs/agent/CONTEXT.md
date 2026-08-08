@@ -27,6 +27,7 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护
 - 模块 `order` 支持正数从顶部排序、负数从底部排序，`0` 无效。
 - 模块 `private` 控制是否隐藏工具栏入口，`publish` 控制是否进入静态构建。
 - 目录树支持节点类型图标、展开状态、单行省略、拖动调整宽度和整体收起。
+- 文章支持 `create` 和 `tags` 元数据；目录树按文章或目录创建时间从近到远排列，目录时间取后代文章的最早创建时间。
 - Markdown 支持标题锚点、独立 `[TOC]` 文章目录以及 `$...$` / `$$...$$` LaTeX 公式。
 - Markdown 图片按正文宽度缩放并保持比例；单独一行的原生 HTML `<img>` 也支持相对路径和自定义属性。
 - HTML 工具通过带 CSP 的资源路由和沙箱 iframe 展示。
@@ -57,7 +58,7 @@ Astro 内容页面         静态资源路由
 | 领域 | 入口文件 | 职责 |
 | --- | --- | --- |
 | 配置模型 | `src/core/config-schema.ts` | Zod schema、默认值和路径格式校验 |
-| 内容清单 | `src/core/content-loader.ts` | 扫描模块、内容树、页面路由和资源路由 |
+| 内容清单 | `src/core/content-loader.ts`、`src/core/content-metadata.ts` | 扫描模块、读取文章元数据、生成内容树、页面路由和资源路由 |
 | 核心类型 | `src/core/types.ts` | 清单、内容文件、目录树和路由类型 |
 | Markdown 集合 | `src/content.config.ts` | Astro Content Collection 加载和 Frontmatter schema |
 | Markdown 加载 | `src/markdown/workspace-markdown-loader.ts` | 从工作区真实路径读取已发布 Markdown 并处理文件名中的 `#` |
@@ -95,7 +96,7 @@ Astro 内容页面         静态资源路由
 - 文件相对路径决定 URL；移动或重命名内容会改变外部链接。
 - `authenticated` 和 `allowlist` 当前只表示“不进入静态构建”，尚未实现登录访问。
 - `private: true` 只隐藏导航，页面仍在 `dist/` 中，不能用于保护敏感内容。
-- Frontmatter 的 `order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
+- Frontmatter 的 `create` 控制目录树排序，`tags` 缺省为 `默认`；`order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
 
 ## 环境与命令
 
