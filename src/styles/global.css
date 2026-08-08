@@ -1,3 +1,5 @@
+@import "katex/dist/katex.min.css";
+
 :root {
   color-scheme: light;
   font-family:
@@ -436,6 +438,13 @@ body.directory-resizing .directory-resizer::before {
   height: auto;
   margin: 1.5rem 0;
   object-fit: contain;
+}
+
+.markdown-content .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.2rem;
 }
 
 .workspace-setting-card {

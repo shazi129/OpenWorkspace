@@ -17,6 +17,8 @@
 - 模块增加 `private` 导航隐藏和 `publish` 静态发布开关。
 - Markdown 文件和目录名称支持 `#`，构建时保持原有内容路径和编码 URL，同目录图片也能正确加载。
 - 只有模块首页时允许省略空的 `contentDir`，避免 Git 部署后因空目录丢失导致构建失败。
+- Markdown 增加 `$...$` 和 `$$...$$` LaTeX 公式渲染，静态输出包含 KaTeX HTML、MathML、样式和字体。
+- Markdown 中单独一行的原生 HTML `<img>` 支持相对图片路径，并在构建时保留自定义样式和属性。
 
 ### Changed
 

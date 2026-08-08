@@ -1399,7 +1399,7 @@ Pre-GFC, earnings explained ~50% of S&P 500 returns. Post-GFC, earnings mattered
 > —— 1997–2009：0% / 2010–2021：**51%**
 > 注：非盈利驱动的市值变化 = 总市值变化 − 历史均值远期 P/E × 远期 EPS 变化
 
-> **📊 图表 69**：*$750bn reduction in the Fed balance sheet and trend earnings growth for 2024E EPS could result in the S&P 500 at 4100 in 2023*
+> **📊 图表 69**：*\$750bn reduction in the Fed balance sheet and trend earnings growth for 2024E EPS could result in the S&P 500 at 4100 in 2023*
 > **假设美联储缩表 7500 亿美元 + 2024 年 EPS 按趋势增长，2023 年标普 500 约在 4100**
 > （以 2010 年以来远期 EPS 变化与美联储资产负债表同比变化拟合的模型 vs. 实际标普 500；2023 点位假设 2024 EPS = \$233（2023 共识 EPS 同比趋势增长 6%），美联储资产负债表采用 BofA 预测）
 
@@ -2738,7 +2738,7 @@ Arbitrage Pricing Theory (APT) stipulates that stock return is a function of mul
 ### How much money is currently tracking smart beta strategies
 ### 当前追踪 Smart Beta 策略的资金规模
 
-Smart beta strategies have experienced rapid growth in assets under management in recent years. According to the data compiled by Bloomberg (Exhibit 164), smart beta funds grew from under $100bn in 2009 to nearly $1.6tn in 2021 before falling to $1.5tn in 2022, which represents a 24% annualized rate, well above the 18% growth rates for the ETF assets overall.
+Smart beta strategies have experienced rapid growth in assets under management in recent years. According to the data compiled by Bloomberg (Exhibit 164), smart beta funds grew from under \$100bn in 2009 to nearly \$1.6tn in 2021 before falling to \$1.5tn in 2022, which represents a 24% annualized rate, well above the 18% growth rates for the ETF assets overall.
 
 Smart Beta 资产近年来快速增长。根据 Bloomberg 数据（图表 164）：**从 2009 年不到 1000 亿美元增至 2021 年近 1.6 万亿美元，2022 年回落至 1.5 万亿美元**——**年化增速 24%**，远高于整体 ETF 资产 18% 的增速。
 

@@ -27,8 +27,8 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护
 - 模块 `order` 支持正数从顶部排序、负数从底部排序，`0` 无效。
 - 模块 `private` 控制是否隐藏工具栏入口，`publish` 控制是否进入静态构建。
 - 目录树支持节点类型图标、展开状态、单行省略、拖动调整宽度和整体收起。
-- Markdown 支持标题锚点及独立 `[TOC]` 标记生成的文章目录。
-- Markdown 图片按正文宽度缩放并保持比例。
+- Markdown 支持标题锚点、独立 `[TOC]` 文章目录以及 `$...$` / `$$...$$` LaTeX 公式。
+- Markdown 图片按正文宽度缩放并保持比例；单独一行的原生 HTML `<img>` 也支持相对路径和自定义属性。
 - HTML 工具通过带 CSP 的资源路由和沙箱 iframe 展示。
 - 桌面端使用双侧栏布局，移动端使用模块抽屉和顶部目录区域。
 
@@ -61,7 +61,7 @@ Astro 内容页面         静态资源路由
 | 核心类型 | `src/core/types.ts` | 清单、内容文件、目录树和路由类型 |
 | Markdown 集合 | `src/content.config.ts` | Astro Content Collection 加载和 Frontmatter schema |
 | Markdown 加载 | `src/markdown/workspace-markdown-loader.ts` | 从工作区真实路径读取已发布 Markdown 并处理文件名中的 `#` |
-| Markdown 扩展 | `src/markdown/toc-marker.ts` | 识别并移除 `[TOC]`，写入渲染元数据 |
+| Markdown 扩展 | `src/markdown/toc-marker.ts`、`src/markdown/math-renderer.ts`、`src/markdown/raw-html-image.ts` | 处理 `[TOC]`、LaTeX 和原生 HTML 图片兼容 |
 | 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown/HTML 路由渲染 |
 | 资源页面 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 图标、附件和 HTML 资源响应 |
 | 工作区布局 | `src/layouts/WorkspaceLayout.astro` | 模块抽屉、目录栏拖动和收起交互 |
