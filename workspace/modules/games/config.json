@@ -1,0 +1,9 @@
+{
+  "id": "games",
+  "title": "小游戏",
+  "order": 4,
+  "access": "public",
+  "icon": "./icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": true
+}

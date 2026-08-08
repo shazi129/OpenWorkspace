@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>税单交易统计工具</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #f5f7fa; --card: #fff; --primary: #4361ee; --primary-hover: #3a56d4;
+  --danger: #e63946; --success: #2a9d8f; --warn: #e9c46a;
+  --text: #2b2d42; --text2: #6c757d; --border: #dee2e6;
+  --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+h1 { font-size: 1.6rem; margin-bottom: 4px; }
+.subtitle { color: var(--text2); font-size: .9rem; margin-bottom: 20px; }
+
+/* Drop zone */
+.drop-zone {
+  border: 2.5px dashed var(--primary); border-radius: var(--radius); padding: 48px 24px;
+  text-align: center; cursor: pointer; transition: all .2s; background: #f0f4ff; margin-bottom: 24px;
+}
+.drop-zone:hover, .drop-zone.drag-over { background: #dde5ff; border-color: var(--primary-hover); }
+.drop-zone .icon { font-size: 2.4rem; margin-bottom: 8px; }
+.drop-zone p { color: var(--text2); }
+.drop-zone input { display: none; }
+
+/* Cards / panels */
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
+.card h2 { font-size: 1.15rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.card h2 .badge { font-size: .75rem; background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 12px; }
+
+/* Metrics row */
+.metrics { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.metric { flex: 1; min-width: 140px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; text-align: center; }
+.metric .label { font-size: .8rem; color: var(--text2); }
+.metric .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+
+/* Settings row */
+.settings { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end; }
+.settings .field { display: flex; flex-direction: column; gap: 4px; }
+.settings label { font-size: .8rem; color: var(--text2); }
+.settings input, .settings select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: .9rem; }
+.settings input[type=number] { width: 100px; }
+.settings input[type=date] { width: 160px; }
+
+/* FX table */
+.fx-table { border-collapse: collapse; font-size: .85rem; margin-bottom: 12px; }
+.fx-table th, .fx-table td { border: 1px solid var(--border); padding: 4px 10px; text-align: center; }
+.fx-table th { background: #f0f4ff; }
+.fx-table input { width: 80px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 4px; text-align: center; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; max-height: 500px; overflow-y: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: .82rem; white-space: nowrap; }
+table.data th { position: sticky; top: 0; background: #4361ee; color: #fff; padding: 8px 10px; text-align: center; z-index: 1; }
+table.data td { padding: 6px 10px; border-bottom: 1px solid #eee; text-align: center; }
+table.data tr:hover td { background: #f0f4ff; }
+table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
+table.data .pos { color: var(--danger); }
+table.data .neg { color: var(--success); }
+table.data .subtotal td { font-weight: 700; background: #e8ecf8; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border: none; border-radius: 8px; font-size: .95rem; cursor: pointer; transition: all .15s; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { opacity: .9; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid var(--border); }
+.tab-btn { padding: 10px 20px; border: none; background: none; font-size: .95rem; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.hidden { display: none; }
+
+/* File list */
+.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.file-tag { background: #e8ecf8; padding: 4px 12px; border-radius: 16px; font-size: .82rem; display: flex; align-items: center; gap: 6px; }
+.file-tag .remove { cursor: pointer; color: var(--danger); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📊 税单交易统计工具</h1>
+  <p class="subtitle">拖拽上传富途年度账单（xlsx / xlsm），自动合并交易流水、计算卖出盈利、年度税费</p>
+
+  <!-- Drop zone -->
+  <div class="drop-zone" id="dropZone">
+    <div class="icon">📁</div>
+    <p><strong>拖拽文件到这里</strong>，或点击选择</p>
+    <p style="font-size:.8rem;margin-top:4px;">支持同时上传多个 xlsx / xlsm 文件</p>
+    <input type="file" id="fileInput" multiple accept=".xlsx,.xlsm">
+  </div>
+  <div class="file-list" id="fileList"></div>
+
+  <!-- Settings -->
+  <div class="card" id="settingsCard" style="display:none">
+    <h2>⚙️ 参数设置</h2>
+    <div class="settings">
+      <div class="field">
+        <label>拆单合并窗口（秒）</label>
+        <input type="number" id="mergeWindow" value="300" min="0" max="600" step="1">
+      </div>
+      <div class="field">
+        <label>包含买入平仓（平空）</label>
+        <select id="includeBuyClose"><option value="1" selected>是</option><option value="0">否</option></select>
+      </div>
+      <div class="field">
+        <label>所得税率</label>
+        <input type="number" id="taxRate" value="0.20" min="0" max="1" step="0.01">
+      </div>
+      <div class="field">
+        <label>滞纳金日利率</label>
+        <input type="number" id="lateRate" value="0.0005" min="0" max="0.01" step="0.0001">
+      </div>
+      <div class="field">
+        <label>申报截止月/日</label>
+        <input type="text" id="dueDate" value="6/30" style="width:70px">
+      </div>
+      <div class="field">
+        <label>滞纳金截止日</label>
+        <input type="date" id="asOfDate">
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <h3 style="font-size:.95rem;margin-bottom:8px;">汇率设置（兑 CNY）</h3>
+      <table class="fx-table" id="fxTable"><thead><tr><th>年份</th><th>HKD→CNY</th><th>USD→CNY</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" onclick="runAnalysis()">▶ 开始分析</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden">
+    <div class="metrics" id="metricsRow"></div>
+
+    <div class="actions">
+      <button class="btn btn-success" onclick="exportXlsx()">⬇ 导出 Excel</button>
+    </div>
+
+    <div class="tabs" id="tabBar"></div>
+    <div id="tabPanels"></div>
+  </div>
+</div>
+
+<script>
+// ─── Globals ───
+let allFiles = [];
+let rawRows = [], mergedRows = [], closeRows = [], annualRows = [];
+
+const REQUIRED_COLS = ['成交时间','账户名称','账户号码','品类','代码名称','交易所/市场','方向','交收日期','币种','数量/面值','价格','成交金额','总费用','变动金额'];
+const NUM_COLS = ['数量/面值','价格','成交金额','总费用','变动金额'];
+const ALL_OPEN = ['买入开仓','卖出开仓'];
+const ALL_CLOSE = ['卖出平仓','买入平仓'];
+const ALL_DIR = [...ALL_OPEN, ...ALL_CLOSE];
+const GROUP_KEYS = ['账户号码','账户名称','品类','代码名称','交易所/市场','方向','币种'];
+
+// ─── Init ───
+document.getElementById('asOfDate').value = new Date().toISOString().slice(0,10);
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value=''; });
+
+function addFiles(fileListObj) {
+  for (const f of fileListObj) {
+    if (!allFiles.find(x => x.name === f.name && x.size === f.size)) allFiles.push(f);
+  }
+  renderFileList();
+  if (allFiles.length) document.getElementById('settingsCard').style.display = '';
+}
+
+function removeFile(idx) {
+  allFiles.splice(idx, 1);
+  renderFileList();
+  if (!allFiles.length) { document.getElementById('settingsCard').style.display = 'none'; document.getElementById('results').classList.add('hidden'); }
+}
+
+function renderFileList() {
+  const el = document.getElementById('fileList');
+  el.innerHTML = allFiles.map((f,i) => `<span class="file-tag">${f.name} <span class="remove" onclick="removeFile(${i})">✕</span></span>`).join('');
+}
+
+// ─── Utils ───
+function toNum(v) { if (v == null || v === '') return 0; const n = Number(v); return isFinite(n) ? n : 0; }
+function fmt(n, d=2) { return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function cls(n) { return n > 0.005 ? 'num pos' : n < -0.005 ? 'num neg' : 'num'; }
+
+function parseDate(v) {
+  if (v instanceof Date) return v;
+  if (typeof v === 'number') {
+    // Excel serial date
+    const d = XLSX.SSF.parse_date_code(v);
+    if (d) return new Date(d.y, d.m-1, d.d, d.H||0, d.M||0, d.S||0);
+  }
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function fmtDate(d) { if(!d) return ''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'); }
+
+// ─── Read files ───
+async function readAllFiles() {
+  const rows = [];
+  for (const f of allFiles) {
+    try {
+      const data = await f.arrayBuffer();
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+      const ws = wb.Sheets['证券-交易流水'];
+      if (!ws) { console.warn(f.name + ': 无 证券-交易流水'); continue; }
+      const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      for (const r of json) {
+        const row = {};
+        for (const c of REQUIRED_COLS) row[c] = r[c] != null ? r[c] : '';
+        for (const c of NUM_COLS) row[c] = toNum(row[c]);
+        row['方向'] = String(row['方向']).trim();
+        row['代码名称'] = String(row['代码名称']).trim();
+        row['币种'] = String(row['币种']).trim();
+        row['品类'] = String(row['品类']).trim();
+        row['账户号码'] = String(row['账户号码']).trim();
+        row['账户名称'] = String(row['账户名称']).trim();
+        row['交易所/市场'] = String(row['交易所/市场']).trim();
+        row._dt = parseDate(row['成交时间']);
+        if (!row._dt) continue;
+        // 排除基金品类的交易
+        if (row['品类'] === '基金') continue;
+        row['成交时间'] = fmtDate(row._dt);
+        row['来源文件'] = f.name;
+        rows.push(row);
+      }
+    } catch(e) { console.error(f.name, e); }
+  }
+  // sort descending
+  rows.sort((a,b) => b._dt - a._dt);
+  return rows;
+}
+
+// ─── Merge split trades ───
+function mergeSplitTrades(rows, windowSec) {
+  if (!rows.length) return [];
+  const asc = [...rows].sort((a,b) => a._dt - b._dt);
+  const groups = {};
+  for (const r of asc) {
+    const k = GROUP_KEYS.map(c => r[c]).join('||');
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(r);
+  }
+
+  const merged = [];
+  for (const k in groups) {
+    const g = groups[k];
+    let cur = null;
+    for (const r of g) {
+      if (!cur) { cur = {...r, _startDt: r._dt, _endDt: r._dt, _fills: 1}; continue; }
+      const delta = Math.abs(r._dt - cur._endDt) / 1000;
+      const samePrice = Math.abs(toNum(r['价格']) - toNum(cur['价格'])) < 1e-9;
+      if (delta <= windowSec && samePrice) {
+        cur['数量/面值'] += r['数量/面值'];
+        cur['成交金额'] += r['成交金额'];
+        cur['总费用'] += r['总费用'];
+        cur['变动金额'] += r['变动金额'];
+        cur._endDt = r._dt;
+        cur._fills++;
+      } else {
+        finalizeMerged(cur);
+        merged.push(cur);
+        cur = {...r, _startDt: r._dt, _endDt: r._dt, _fills: 1};
+      }
+    }
+    if (cur) { finalizeMerged(cur); merged.push(cur); }
+  }
+
+  function finalizeMerged(c) {
+    const qtyAbs = Math.abs(c['数量/面值']);
+    const amtAbs = Math.abs(c['成交金额']);
+    c['价格'] = qtyAbs > 1e-12 ? amtAbs / qtyAbs : c['价格'];
+    c._dt = c._startDt;
+    c['成交时间'] = fmtDate(c._startDt);
+    c['拆单合并笔数'] = c._fills;
+  }
+
+  merged.sort((a,b) => b._dt - a._dt);
+  return merged;
+}
+
+// ─── FIFO profit ───
+function fifoProfit(merged, includeBuyClose) {
+  if (!merged.length) return [];
+  const asc = [...merged].sort((a,b) => a._dt - b._dt);
+
+  const longInv = {};  // key -> [{qty, unitValue}]
+  const shortInv = {};
+  const getQ = (inv, k) => { if(!inv[k]) inv[k]=[]; return inv[k]; };
+
+  const result = [];
+
+  for (const r of asc) {
+    const dir = r['方向'];
+    if (!ALL_DIR.includes(dir)) continue;
+    // 不按账户区分，同一资产跨账户转仓后也能匹配成本
+    const k = [r['代码名称'], r['品类'], r['币种']].join('||');
+    const qty = Math.abs(r['数量/面值']);
+    const amtAbs = Math.abs(r['成交金额']);
+    const fee = r['总费用'];
+    if (qty < 1e-12) continue;
+
+    if (dir === '买入开仓') {
+      // 分别记录买入纯金额和买入手续费
+      getQ(longInv, k).push({ qty, unitCost: amtAbs / qty, unitFee: fee / qty });
+      continue;
+    }
+    if (dir === '卖出开仓') {
+      getQ(shortInv, k).push({ qty, unitCost: amtAbs / qty, unitFee: fee / qty });
+      continue;
+    }
+    if (dir === '卖出平仓') {
+      let need = qty, costBasis = 0, buyFee = 0;
+      const q = getQ(longInv, k);
+      while (need > 1e-12 && q.length) {
+        const lot = q[0], use = Math.min(need, lot.qty);
+        costBasis += use * lot.unitCost;
+        buyFee += use * lot.unitFee;
+        lot.qty -= use; need -= use;
+        if (lot.qty <= 1e-12) q.shift();
+      }
+      const totalFee = buyFee + fee; // 买入手续费 + 卖出手续费
+      const gross = amtAbs - costBasis; // 毛利（卖出额 - 买入纯金额）
+      result.push({
+        '成交时间': r['成交时间'], _dt: r._dt, '年份': r._dt.getFullYear(),
+        '账户名称': r['账户名称'], '品类': r['品类'], '代码名称': r['代码名称'],
+        '交易所/市场': r['交易所/市场'], '方向': dir, '币种': r['币种'],
+        '平仓数量': qty, '平仓成交额': amtAbs, '成交均价': qty > 1e-12 ? amtAbs / qty : 0, '分摊成本': costBasis,
+        '手续费': totalFee, '该笔盈利': gross, '净盈利': gross - totalFee,
+        '库存不足数量': Math.max(0, need), '拆单合并笔数': r['拆单合并笔数'] || 1,
+      });
+      continue;
+    }
+    if (dir === '买入平仓' && includeBuyClose) {
+      let need = qty, openProc = 0, openFee = 0;
+      const q = getQ(shortInv, k);
+      while (need > 1e-12 && q.length) {
+        const lot = q[0], use = Math.min(need, lot.qty);
+        openProc += use * lot.unitCost;
+        openFee += use * lot.unitFee;
+        lot.qty -= use; need -= use;
+        if (lot.qty <= 1e-12) q.shift();
+      }
+      const totalFee = openFee + fee; // 卖出开仓手续费 + 买入平仓手续费
+      const gross = openProc - amtAbs; // 毛利
+      result.push({
+        '成交时间': r['成交时间'], _dt: r._dt, '年份': r._dt.getFullYear(),
+        '账户名称': r['账户名称'], '品类': r['品类'], '代码名称': r['代码名称'],
+        '交易所/市场': r['交易所/市场'], '方向': dir, '币种': r['币种'],
+        '平仓数量': qty, '平仓成交额': amtAbs, '成交均价': qty > 1e-12 ? amtAbs / qty : 0, '分摊成本': openProc,
+        '手续费': totalFee, '该笔盈利': gross, '净盈利': gross - totalFee,
+        '库存不足数量': Math.max(0, need), '拆单合并笔数': r['拆单合并笔数'] || 1,
+      });
+    }
+  }
+
+  result.sort((a,b) => b._dt - a._dt);
+  return result;
+}
+
+// ─── Annual tax ───
+function annualTax(closes, taxRate, lateRateDaily, dueMD, asOf, fxMap) {
+  if (!closes.length) return [];
+  // group by year+currency
+  const yc = {};
+  for (const r of closes) {
+    const k = r['年份'] + '|' + r['币种'];
+    if (!yc[k]) yc[k] = { year: r['年份'], ccy: r['币种'], count: 0, fee: 0, net: 0 };
+    yc[k].count++;
+    yc[k].fee += r['手续费'];
+    yc[k].net += r['净盈利'];
+  }
+
+  // aggregate to year level in CNY
+  const yearly = {};
+  for (const k in yc) {
+    const { year, ccy, count, fee, net } = yc[k];
+    const fx = fxMap[year + '|' + ccy] || 1;
+    if (!yearly[year]) yearly[year] = { year, count: 0, feeCNY: 0, netCNY: 0, details: [] };
+    yearly[year].count += count;
+    yearly[year].feeCNY += fee * fx;
+    yearly[year].netCNY += net * fx;
+    yearly[year].details.push({ ccy, count, fee, net, fx, netCNY: net * fx });
+  }
+
+  const result = [];
+  for (const y of Object.keys(yearly).sort()) {
+    const d = yearly[y];
+    const taxable = Math.max(0, d.netCNY);
+    const tax = taxable * taxRate;
+    const [dm, dd] = dueMD.split('/').map(Number);
+    const dueD = new Date(Number(y)+1, dm-1, dd);
+    const days = Math.max(0, Math.floor((asOf - dueD) / 86400000));
+    const late = tax * days * lateRateDaily;
+    result.push({
+      '年份': Number(y), '卖出笔数': d.count,
+      '手续费折CNY': d.feeCNY, '年度净盈利折CNY': d.netCNY,
+      '应税所得(CNY)': taxable, '应纳税额(CNY)': tax,
+      '逾期天数': days, '滞纳金(CNY)': late, '应补总额(CNY)': tax + late,
+      _details: d.details,
+    });
+  }
+  return result;
+}
+
+// ─── Get FX map ───
+function getFxMap() {
+  const map = {};
+  const tbody = document.querySelector('#fxTable tbody');
+  for (const tr of tbody.rows) {
+    const year = tr.cells[0].textContent.trim();
+    const hkd = toNum(tr.cells[1].querySelector('input')?.value);
+    const usd = toNum(tr.cells[2].querySelector('input')?.value);
+    map[year + '|HKD'] = hkd;
+    map[year + '|USD'] = usd;
+    map[year + '|CNY'] = 1;
+  }
+  return map;
+}
+
+function buildFxTable(years) {
+  const defaults = { HKD: { 2021:0.83, 2022:0.86, 2023:0.91, 2024:0.92 }, USD: { 2021:6.45, 2022:6.73, 2023:7.08, 2024:7.12 } };
+  const tbody = document.querySelector('#fxTable tbody');
+  tbody.innerHTML = '';
+  for (const y of years) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${y}</td><td><input type="number" step="0.01" value="${defaults.HKD[y]||0.9}"></td><td><input type="number" step="0.01" value="${defaults.USD[y]||7.0}"></td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// ─── Run ───
+async function runAnalysis() {
+  rawRows = await readAllFiles();
+  if (!rawRows.length) { alert('未读取到有效的 证券-交易流水 数据'); return; }
+
+  const windowSec = toNum(document.getElementById('mergeWindow').value);
+  const inclBuyClose = document.getElementById('includeBuyClose').value === '1';
+
+  mergedRows = mergeSplitTrades(rawRows, windowSec);
+  closeRows = fifoProfit(mergedRows, inclBuyClose);
+
+  const years = [...new Set(closeRows.map(r => r['年份']))].sort();
+  buildFxTable(years);
+
+  const fxMap = getFxMap();
+  const taxRate = toNum(document.getElementById('taxRate').value);
+  const lateRate = toNum(document.getElementById('lateRate').value);
+  const dueMD = document.getElementById('dueDate').value.trim();
+  const asOf = new Date(document.getElementById('asOfDate').value);
+
+  annualRows = annualTax(closeRows, taxRate, lateRate, dueMD, asOf, fxMap);
+
+  renderResults();
+}
+
+// ─── Render ───
+function renderResults() {
+  document.getElementById('results').classList.remove('hidden');
+
+  // Metrics
+  const mEl = document.getElementById('metricsRow');
+  mEl.innerHTML = `
+    <div class="metric"><div class="label">原始记录</div><div class="value">${rawRows.length}</div></div>
+    <div class="metric"><div class="label">合并后</div><div class="value">${mergedRows.length}</div></div>
+    <div class="metric"><div class="label">卖出/平仓</div><div class="value">${closeRows.length}</div></div>
+    <div class="metric"><div class="label">年度汇总</div><div class="value">${annualRows.length}</div></div>
+  `;
+
+  // Tabs
+  const tabs = [
+    { id:'merged', label:'合并后交易流水' },
+    { id:'close', label:'卖出盈利明细' },
+    { id:'annual', label:'年度税费汇总' },
+  ];
+  const tabBar = document.getElementById('tabBar');
+  const panels = document.getElementById('tabPanels');
+  tabBar.innerHTML = tabs.map((t,i) => `<button class="tab-btn ${i===0?'active':''}" onclick="switchTab('${t.id}',this)">${t.label}</button>`).join('');
+  panels.innerHTML = tabs.map((t,i) => `<div id="panel_${t.id}" class="tab-content card ${i===0?'active':''}" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0"></div>`).join('');
+
+  renderMergedTable();
+  renderCloseTable();
+  renderAnnualTable();
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel_'+id).classList.add('active');
+}
+
+function renderMergedTable() {
+  const cols = ['成交时间','品类','代码名称','交易所/市场','方向','币种','数量/面值','价格','成交金额','总费用','变动金额','拆单合并笔数'];
+  const numSet = new Set(['数量/面值','价格','成交金额','总费用','变动金额','拆单合并笔数']);
+  let html = '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  for (const r of mergedRows) {
+    html += '<tr>' + cols.map(c => {
+      const v = r[c]; if (numSet.has(c)) { const n=toNum(v); return `<td class="${cls(n)}">${fmt(n)}</td>`; }
+      return `<td>${v??''}</td>`;
+    }).join('') + '</tr>';
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('panel_merged').innerHTML = '<h2>合并后交易流水 <span class="badge">时间近→远</span></h2>' + html;
+}
+
+function renderCloseTable() {
+  const cols = ['成交时间','品类','代码名称','方向','币种','平仓数量','平仓成交额','成交均价','分摊成本','手续费','该笔盈利','净盈利','库存不足数量','拆单合并笔数'];
+  const numSet = new Set(['平仓数量','平仓成交额','成交均价','分摊成本','手续费','该笔盈利','净盈利','库存不足数量','拆单合并笔数']);
+  let html = '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  for (const r of closeRows) {
+    html += '<tr>' + cols.map(c => {
+      const v = r[c]; if (numSet.has(c)) { const n=toNum(v); return `<td class="${cls(n)}">${fmt(n)}</td>`; }
+      return `<td>${v??''}</td>`;
+    }).join('') + '</tr>';
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('panel_close').innerHTML = '<h2>卖出交易盈利明细 <span class="badge">FIFO成本法</span></h2>' + html;
+}
+
+function renderAnnualTable() {
+  const cols = ['年份','卖出笔数','手续费折CNY','年度净盈利折CNY','应税所得(CNY)','应纳税额(CNY)','逾期天数','滞纳金(CNY)','应补总额(CNY)'];
+  const numSet = new Set(cols.filter(c => c !== '年份'));
+  let html = '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+
+  let totalTax = 0, totalLate = 0, totalAll = 0;
+  for (const r of annualRows) {
+    totalTax += r['应纳税额(CNY)']; totalLate += r['滞纳金(CNY)']; totalAll += r['应补总额(CNY)'];
+    html += '<tr>' + cols.map(c => {
+      const v = r[c]; if (numSet.has(c)) { const n=toNum(v); return `<td class="${cls(n)}">${fmt(n)}</td>`; }
+      return `<td>${v??''}</td>`;
+    }).join('') + '</tr>';
+  }
+  // Total row
+  html += `<tr class="subtotal"><td>合计</td><td></td><td></td><td></td><td></td><td class="num">${fmt(totalTax)}</td><td></td><td class="num">${fmt(totalLate)}</td><td class="num pos">${fmt(totalAll)}</td></tr>`;
+  html += '</tbody></table></div>';
+
+  document.getElementById('panel_annual').innerHTML = '<h2>年度税费汇总 <span class="badge">境外收入所得税</span></h2>' + html;
+}
+
+// ─── Export ───
+function exportXlsx() {
+  const wb = XLSX.utils.book_new();
+
+  const cleanRows = (rows, exclude=['_dt','_startDt','_endDt','_fills','_details','来源文件','账户名称','账户号码']) => rows.map(r => {
+    const o = {};
+    for (const k in r) if (!exclude.includes(k)) o[k] = r[k];
+    return o;
+  });
+
+  const ws1 = XLSX.utils.json_to_sheet(cleanRows(mergedRows));
+  XLSX.utils.book_append_sheet(wb, ws1, '合并后交易流水');
+
+  const ws2 = XLSX.utils.json_to_sheet(cleanRows(closeRows));
+  XLSX.utils.book_append_sheet(wb, ws2, '卖出盈利明细');
+
+  const ws3 = XLSX.utils.json_to_sheet(cleanRows(annualRows));
+  XLSX.utils.book_append_sheet(wb, ws3, '年度税费汇总');
+
+  const now = new Date();
+  const ts = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb, `税单分析结果_${ts}.xlsx`);
+}
+
+// ─── Auto-load from server ───
+async function autoLoadFromServer() {
+  try {
+    const resp = await fetch('/api/files');
+    if (!resp.ok) return;
+    const fileNames = await resp.json();
+    if (!fileNames.length) return;
+
+    const statusEl = document.createElement('div');
+    statusEl.style.cssText = 'background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.9rem;color:#2e7d32;';
+    statusEl.innerHTML = `🔄 正在从服务器自动加载 ${fileNames.length} 个文件...`;
+    document.querySelector('.container').insertBefore(statusEl, document.getElementById('dropZone'));
+
+    for (const name of fileNames) {
+      try {
+        const fResp = await fetch('/files/' + encodeURIComponent(name));
+        if (!fResp.ok) continue;
+        const blob = await fResp.blob();
+        const file = new File([blob], name, { type: blob.type });
+        if (!allFiles.find(x => x.name === file.name)) allFiles.push(file);
+      } catch(e) { console.warn('加载失败:', name, e); }
+    }
+
+    renderFileList();
+    if (allFiles.length) {
+      document.getElementById('settingsCard').style.display = '';
+      statusEl.innerHTML = `✅ 已自动加载 ${allFiles.length} 个文件，点击 <b>▶ 开始分析</b> 即可`;
+      statusEl.style.background = '#e8f5e9';
+    } else {
+      statusEl.innerHTML = '⚠️ 未找到可用的 xlsx 文件';
+      statusEl.style.background = '#fff3e0'; statusEl.style.color = '#e65100';
+    }
+  } catch(e) {
+    // Not running from server, ignore
+  }
+}
+
+// On page load, try auto-loading
+window.addEventListener('DOMContentLoaded', autoLoadFromServer);
+</script>
+</body>
+</html>

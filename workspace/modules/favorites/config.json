@@ -1,0 +1,9 @@
+{
+  "id": "favorites",
+  "title": "收藏",
+  "order": 5,
+  "access": "public",
+  "icon": "./icon.svg",
+  "contentDir": "./content",
+  "showDirectoryTree": true
+}

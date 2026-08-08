@@ -6,10 +6,10 @@ export const prerender = true;
 const site = loadSiteManifest();
 const defaultModule = site.modules.find(
   (module) => module.id === site.defaultModule,
-);
+) ?? site.modules[0];
 
 if (!defaultModule) {
-  throw new Error(`找不到默认模块：${site.defaultModule}`);
+  throw new Error(`没有可用的模块`);
 }
 
 return Astro.redirect(defaultModule.href);

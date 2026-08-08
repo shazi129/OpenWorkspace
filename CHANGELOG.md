@@ -38,6 +38,21 @@
 - 批量修正 articles 模块下 28 篇文章的 frontmatter 格式（旧格式 `Title:/Date:/Category:/Tags:` → 标准 YAML `create` + `tags`）。
 - 修正文章中 `#` 后无空格、Tab 缩进代码块、`@(...)[...]` 非标准语法等 Markdown 格式问题。
 - 修正 `梦蝶.md` frontmatter 日期缺少空格的问题。
+- 新增 `games` 模块，内置 flappy bird 小游戏，支持纯 Canvas 绘制。
+- 新增 `favorites` 模块，分类收藏常用网站链接。
+- 新增 `scripts/build-module.bat`，支持按模块过滤构建（`OPENWORKSPACE_BUILD_MODULES`）。
+- 支持 `OPENWORKSPACE_BUILD_MODULES` 环境变量，可按逗号分隔的模块 ID 列表选择性构建。
+- 部分构建时首页自动重定向到第一个可用模块。
+- `tsconfig.json` 排除 `workspace/` 目录，避免对内容文件做 TypeScript 检查。
+
+### Changed
+
+- `tools` 模块首页改为 `index.md`，去掉指向不存在的 `content/index.html` 的 index 字段。
+
+### Fixed
+
+- `package-lock.json` 缺失 `@types/js-yaml` 导致 `npm ci` 失败，改用 `npm install`。
+- `scripts/install.bat` 文件编码改为纯 ASCII，修复 Windows CMD 下乱码报错。
 
 ## 2026-08-07
 

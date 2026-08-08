@@ -418,19 +418,24 @@ export function loadSiteManifest(workspaceRoot = WORKSPACE_ROOT): SiteManifest {
     throw new Error(`workspace/modules 不存在：${modulesRoot}`);
   }
 
+  const buildFilter = process.env.OPENWORKSPACE_BUILD_MODULES?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   const modules = readdirSync(modulesRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
+    .filter((entry) => !buildFilter || buildFilter.length === 0 || buildFilter.includes(entry.name))
     .map((entry) =>
       loadModule(path.join(modulesRoot, entry.name), entry.name, modulesRoot),
     )
     .filter((module): module is ModuleManifest => Boolean(module))
     .sort(compareModuleOrder);
 
-  if (modules.length === 0) {
+  if (!buildFilter && modules.length === 0) {
     throw new Error("workspace/modules 中没有可静态发布的模块");
   }
 
-  if (!modules.some((module) => module.id === globalConfig.defaultModule)) {
+  if (!buildFilter && !modules.some((module) => module.id === globalConfig.defaultModule)) {
     throw new Error(
       `defaultModule ${globalConfig.defaultModule} 不存在，或未进入静态发布`,
     );

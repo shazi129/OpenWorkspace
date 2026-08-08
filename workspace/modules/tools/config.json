@@ -6,6 +6,5 @@
   "icon": "./icon.svg",
   "contentDir": "./content",
   "showDirectoryTree": true,
-  "runtime": "client",
-  "index": "content/index.html"
+  "runtime": "client"
 }
