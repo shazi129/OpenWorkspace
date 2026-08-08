@@ -1,8 +1,7 @@
-Title:lua源码阅读3——table  
-Date: 2019-03-19  
-Category: lua源码阅读
-
-
+---
+create: 2019-03-19 00:00:00
+tags: lua源码阅读
+---
 
 [TOC]
 

@@ -12,7 +12,7 @@
 - 工具栏内置模块图标统一为轻量线性风格，并使用橙色突出当前模块。
 - 模块首页默认改为模块根 `index.md`，并支持将 `content/` 文件配置为首页和目录树默认定位。
 - 目录树站内跳转会保留已展开的兄弟目录，直接链接访问仍只展开当前路径。
-- 增加 `order: -1` 的设置模块，当前“更新”操作通过受保护的后台服务拉取仓库并重新构建。
+- 增加 `order: -1` 的设置模块，当前"更新"操作通过受保护的后台服务拉取仓库并重新构建。
 - 增加通用 API 宿主、私有全局服务发现和服务端模块 `serverEntry`。
 - 模块增加 `private` 导航隐藏和 `publish` 静态发布开关。
 - Markdown 文件和目录名称支持 `#`，构建时保持原有内容路径和编码 URL，同目录图片也能正确加载。
@@ -20,6 +20,9 @@
 - Markdown 增加 `$...$` 和 `$$...$$` LaTeX 公式渲染，静态输出包含 KaTeX HTML、MathML、样式和字体。
 - Markdown 中单独一行的原生 HTML `<img>` 支持相对图片路径，并在构建时保留自定义样式和属性。
 - 文章增加 `create` 和 `tags` 元数据，标签缺省为 `默认`，目录树按文章及目录创建时间从近到远排列。
+- 新增 `scripts/preview.bat`，通过 fnm 自动切换 Node 版本后构建并启动预览。
+- 新增 `scripts/install.bat`，一键安装 fnm、Node 版本及项目依赖。
+- 安装文档补充 Windows 下 fnm 安装方式。
 
 ### Changed
 
@@ -32,6 +35,9 @@
 ### Fixed
 
 - 将 Markdown 中的 Windows 图片路径改为跨平台相对路径，修复 Linux 构建时的 `ImageNotFound`。
+- 批量修正 articles 模块下 28 篇文章的 frontmatter 格式（旧格式 `Title:/Date:/Category:/Tags:` → 标准 YAML `create` + `tags`）。
+- 修正文章中 `#` 后无空格、Tab 缩进代码块、`@(...)[...]` 非标准语法等 Markdown 格式问题。
+- 修正 `梦蝶.md` frontmatter 日期缺少空格的问题。
 
 ## 2026-08-07
 

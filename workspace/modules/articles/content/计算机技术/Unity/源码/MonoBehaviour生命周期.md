@@ -1,7 +1,7 @@
-Title: MonoBehaviour生命周期
-Date: 2020-05-12
-Category: 源码
-Tags: Unity
+---
+create: 2020-05-12 00:00:00
+tags: Unity
+---
 
 [TOC]
 

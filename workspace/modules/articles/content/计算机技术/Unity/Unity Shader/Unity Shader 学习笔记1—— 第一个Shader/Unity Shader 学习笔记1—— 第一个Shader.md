@@ -1,10 +1,9 @@
-Title: Unity Shader 学习笔记1 —— 第一个Shader
-Date: 2017-10-25
-Category: 计算机图形学
-Tags: 学习笔记, Unity, shader
+---
+create: 2017-10-25 00:00:00
+tags: 学习笔记, Unity, shader
+---
 
-#Unity Shader 学习笔记1—— 第一个Shader
-@(计算机图形学)[学习笔记, Unity, shader]
+# Unity Shader 学习笔记1—— 第一个Shader
 
 [TOC]
 

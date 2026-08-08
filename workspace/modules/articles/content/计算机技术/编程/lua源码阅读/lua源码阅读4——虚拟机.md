@@ -1,6 +1,7 @@
-Title:lua源码阅读4——虚拟机   
-Date: 2020-05-15 
-Category: lua源码阅读     
+---
+create: 2020-05-15 00:00:00
+tags: lua源码阅读
+---
 
 [TOC]
 

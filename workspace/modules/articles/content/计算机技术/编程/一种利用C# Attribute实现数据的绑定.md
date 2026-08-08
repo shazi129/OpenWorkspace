@@ -1,9 +1,9 @@
-Title: 一种利用C# Attribute实现数据的绑定
-Date: 2018-05-15           
-Category: 编程语言      
-Tags: 学习笔记 
+---
+create: 2018-05-15 00:00:00
+tags: 学习笔记
+---
 
-#一种利用C# Attribute实现数据的绑定
+# 一种利用C# Attribute实现数据的绑定
 
 在日常开发中，经常会有数据和UI绑定的需求，即数据发生改变时，UI要随之改变。这里提供一个简单的思路，目的是尽量减少代码的编写。
 
@@ -106,41 +106,41 @@ public class ModelBase
 如果model中的某个property要被绑定，那么就加上`ObservableName`的属性，指定绑定的key， 然后就可以通过`addObserverBinding`来绑定行为了。
 
 ```csharp
-	class Person: ModelBase
+class Person: ModelBase
+{
+    [ObservableName("address")]
+    public string address { get; set; }
+}
+
+class Test
+{
+    public void testAttribute()
     {
-        [ObservableName("address")]
-        public string address { get; set; }
+        Person zhangwen = new Person();
+        zhangwen.addObserverBinding<string>("address", onZhangwenAddrChange);
+
+        Person shazi = new Person();
+        shazi.addObserverBinding<string>("address", onShaziAddrChange);
+
+        zhangwen.setObservableData("address", "caifugang");
+        shazi.setObservableData("address", "baijin");
     }
 
-    class Test
+    private void onShaziAddrChange(string obj)
     {
-        public void testAttribute()
-        {
-            Person zhangwen = new Person();
-            zhangwen.addObserverBinding<string>("address", onZhangwenAddrChange);
-
-            Person shazi = new Person();
-            shazi.addObserverBinding<string>("address", onShaziAddrChange);
-
-            zhangwen.setObservableData("address", "caifugang");
-            shazi.setObservableData("address", "baijin");
-        }
-
-        private void onShaziAddrChange(string obj)
-        {
-            Console.WriteLine("shazi's addr changed, new addr: " + obj);
-        }
-
-        private void onZhangwenAddrChange(string obj)
-        {
-            Console.WriteLine("zhangwen's addr changed, new addr: " + obj);
-        }
-        
-		static void Main(string[] args)
-        {
-            TestAttribute test = new TestAttribute();
-            test.testAttribute();
-            Console.ReadKey();
-        }
+        Console.WriteLine("shazi's addr changed, new addr: " + obj);
     }
+
+    private void onZhangwenAddrChange(string obj)
+    {
+        Console.WriteLine("zhangwen's addr changed, new addr: " + obj);
+    }
+
+    static void Main(string[] args)
+    {
+        TestAttribute test = new TestAttribute();
+        test.testAttribute();
+        Console.ReadKey();
+    }
+}
 ```

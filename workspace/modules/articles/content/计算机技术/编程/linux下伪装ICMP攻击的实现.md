@@ -1,11 +1,9 @@
-Title: linux下伪装ICMP攻击的实现     
-Date: 2010-04-24           
-Category: 编程语言      
-Tags: Python  
+---
+create: 2010-04-24 00:00:00
+tags: 信息安全, C
+---
 
-#linux下伪装ICMP攻击的实现
-
-@(编程语言)[信息安全, C]
+# linux下伪装ICMP攻击的实现
 
 ```c
 #include <sys/socket.h>

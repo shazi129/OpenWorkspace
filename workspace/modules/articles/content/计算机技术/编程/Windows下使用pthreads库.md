@@ -1,7 +1,7 @@
-Title: Windows下使用pthreads库   
-Date: 2017-01-04           
-Category: 编程语言      
-Tags: 学习笔记 
+---
+create: 2017-01-04 00:00:00
+tags: 学习笔记
+--- 
 
 **环境搭建**
 

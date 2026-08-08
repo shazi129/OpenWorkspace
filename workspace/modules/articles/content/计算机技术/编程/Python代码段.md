@@ -1,9 +1,9 @@
-Title: python代码段     
-Date: 2015-11-10           
-Category: 编程语言      
-Tags: Python  
+---
+create: 2015-11-10 00:00:00
+tags: Python
+---
 
-#Python代码段
+# Python代码段
 
 
 [TOC]

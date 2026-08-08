@@ -1,7 +1,7 @@
-Title: 使用stencil实现mask功能
-Date: 2019-9-24
-Category: 计算机图形学
-Tags: 学习笔记, Unity, shader
+---
+create: 2019-09-24 00:00:00
+tags: 学习笔记, Unity, shader
+---
 
 
 
