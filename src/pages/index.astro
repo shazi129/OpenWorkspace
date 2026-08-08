@@ -12,6 +12,6 @@ if (!defaultModule) {
   throw new Error(`没有可用的模块`);
 }
 
-return Astro.redirect(defaultModule.href);
+return Astro.redirect(defaultModule.href, 301);
 ---
 
