@@ -100,7 +100,10 @@ function encodeUrlPath(value: string): string {
 export function contentHref(moduleId: string, slug: string): string {
   const encodedModule = encodeURIComponent(moduleId);
   const encodedSlug = encodeUrlPath(slug);
-  return encodedSlug ? `/${encodedModule}/${encodedSlug}/` : `/${encodedModule}/`;
+  const trailing = encodedSlug.endsWith(".html") ? "" : "/";
+  return encodedSlug
+    ? `/${encodedModule}/${encodedSlug}${trailing}`
+    : `/${encodedModule}/`;
 }
 
 function rawAssetUrl(moduleId: string, moduleRelativePath: string): string {
