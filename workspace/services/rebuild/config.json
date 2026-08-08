@@ -1,5 +1,0 @@
-{
-  "id": "rebuild",
-  "entry": "./index.mjs",
-  "enabled": true
-}

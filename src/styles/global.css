@@ -447,65 +447,6 @@ body.directory-resizing .directory-resizer::before {
   padding-block: 0.2rem;
 }
 
-.workspace-setting-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1.5rem;
-  align-items: center;
-  margin-top: 2rem;
-  padding: 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: #fbfcfe;
-}
-
-.workspace-setting-copy h2,
-.workspace-setting-copy p,
-.workspace-update-status {
-  margin: 0;
-}
-
-.workspace-setting-copy p,
-.workspace-update-status {
-  color: var(--muted);
-}
-
-.workspace-setting-copy p {
-  margin-top: 0.35rem;
-}
-
-.workspace-setting-action {
-  min-width: 9rem;
-  text-align: right;
-}
-
-.workspace-update-button {
-  min-width: 7rem;
-  padding: 0.65rem 1rem;
-  border: 1px solid #ffb99a;
-  border-radius: 0.55rem;
-  color: #b93800;
-  background: #fff4ef;
-  cursor: pointer;
-}
-
-.workspace-update-button:hover,
-.workspace-update-button:focus-visible {
-  border-color: #ff6422;
-  background: #ffe7dc;
-}
-
-.workspace-update-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-.workspace-update-status {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
 .markdown-content code {
   padding: 0.12rem 0.35rem;
   border-radius: 0.3rem;
