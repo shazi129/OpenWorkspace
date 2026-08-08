@@ -10,7 +10,7 @@
   "scripts": {
     "context": "node scripts/context-report.mjs",
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
     "api": "node scripts/api-server.mjs",
     "check": "astro check",

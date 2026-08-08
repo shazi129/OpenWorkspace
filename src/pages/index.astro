@@ -12,6 +12,8 @@ if (!defaultModule) {
   throw new Error(`没有可用的模块`);
 }
 
-return Astro.redirect(defaultModule.href, 301);
+// postbuild.mjs will copy defaultModule/index.html to dist/index.html
+// so the root URL serves the default module directly without a redirect page.
+return Astro.redirect(defaultModule.href);
 ---
 
