@@ -4,7 +4,7 @@ export type ContentKind = "markdown" | "html";
 
 export interface ContentFile {
   absolutePath: string;
-  createTime?: string;
+  createTime: string;
   entryId?: string;
   href: string;
   kind: ContentKind;
@@ -13,6 +13,15 @@ export interface ContentFile {
   relativePath: string;
   slug: string;
   tags: string[];
+  title: string;
+}
+
+export interface ContentIndexEntry {
+  create: string;
+  href: string;
+  kind: ContentKind;
+  tags: string[];
+  title: string;
 }
 
 export interface ContentTreeNode {
@@ -28,8 +37,11 @@ export interface ModuleManifest extends ModuleConfig {
   absoluteContentDir: string;
   absoluteModuleDir: string;
   contentFiles: ContentFile[];
+  contentIndex: ContentIndexEntry[];
   href: string;
   iconUrl: string;
+  indexMode: "content" | "generated";
+  indexPageSize: number;
   indexSlug: string;
   tree: ContentTreeNode[];
 }
@@ -41,12 +53,18 @@ export interface SiteManifest extends GlobalConfig {
 export interface ContentRouteProps {
   entryId?: string;
   href: string;
-  kind: ContentKind;
+  indexEntries?: ContentIndexEntry[];
+  indexPageSize?: number;
+  kind: ContentKind | "generated-index";
   label: string;
   moduleId: string;
   rawUrl?: string;
   relativePath: string;
   slug: string;
+}
+
+export interface ContentIndexRouteProps {
+  entries: ContentIndexEntry[];
 }
 
 export interface RawAssetRouteProps {

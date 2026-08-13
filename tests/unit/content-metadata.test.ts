@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  DEFAULT_CONTENT_TAG,
+  DEFAULT_CONTENT_CREATE_TIME,
   normalizeContentTags,
   readContentMetadata,
 } from "../../src/core/content-metadata";
@@ -43,12 +43,23 @@ describe("内容元数据", () => {
     ]);
   });
 
-  it("没有 tags 时使用默认标记", () => {
+  it("没有 create 和 tags 时使用默认时间和空标签", () => {
     const filePath = createMarkdown("# 没有 Frontmatter 的文章");
 
     expect(readContentMetadata(filePath)).toEqual({
-      tags: [DEFAULT_CONTENT_TAG],
+      createTime: DEFAULT_CONTENT_CREATE_TIME,
+      tags: [],
     });
+  });
+
+  it("允许 tags 显式为空", () => {
+    const filePath = createMarkdown("---\ntags:\n---\n\n# 空标签文章");
+
+    expect(readContentMetadata(filePath)).toEqual({
+      createTime: DEFAULT_CONTENT_CREATE_TIME,
+      tags: [],
+    });
+    expect(normalizeContentTags([])).toEqual([]);
   });
 
   it("拒绝无效的 create", () => {

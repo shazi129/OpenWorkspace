@@ -27,7 +27,8 @@ OpenWorkspace 是一个由工作空间驱动的个人网站框架。仓库内的
 - 模块 `order` 支持正数从顶部排序、负数从底部排序，`0` 无效。
 - 模块 `private` 控制是否隐藏工具栏入口，`publish` 控制是否进入静态构建。
 - 目录树支持节点类型图标、展开状态、单行省略、拖动调整宽度和整体收起。
-- 文章支持 `create` 和 `tags` 元数据；目录树按文章或目录创建时间从近到远排列，目录时间取后代文章的最早创建时间。
+- 文章支持 `create` 和可为空的 `tags` 元数据；缺少时间时使用 2000-01-01，目录树按文章或目录创建时间从近到远排列。
+- 模块没有根 `index.md` 时自动生成可按标题和标签搜索、分页的内容首页，并输出公开模块 JSON 索引。
 - Markdown 支持标题锚点、独立 `[TOC]` 文章目录以及 `$...$` / `$$...$$` LaTeX 公式。
 - Markdown 图片按正文宽度缩放并保持比例；单独一行的原生 HTML `<img>` 也支持相对路径和自定义属性。
 - HTML 工具通过带 CSP 的资源路由和沙箱 iframe 展示。
@@ -42,7 +43,7 @@ OpenWorkspace 是一个由工作空间驱动的个人网站框架。仓库内的
 config-schema.ts + content-loader.ts
                 │
                 ▼
-SiteManifest / ContentRouteProps / RawAssetRouteProps
+SiteManifest / ContentRouteProps / ContentIndexEntry / RawAssetRouteProps
                 │
        ┌────────┴─────────┐
        ▼                  ▼
@@ -64,7 +65,8 @@ Astro 内容页面         静态资源路由
 | Markdown 集合 | `src/content.config.ts` | Astro Content Collection 加载和 Frontmatter schema |
 | Markdown 加载 | `src/markdown/workspace-markdown-loader.ts` | 从工作区真实路径读取已发布 Markdown 并处理文件名中的 `#` |
 | Markdown 扩展 | `src/markdown/toc-marker.ts`、`src/markdown/math-renderer.ts`、`src/markdown/raw-html-image.ts` | 处理 `[TOC]`、LaTeX 和原生 HTML 图片兼容 |
-| 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown/HTML 路由渲染 |
+| 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown、HTML 和自动索引首页路由渲染 |
+| 自动索引 | `src/components/GeneratedModuleIndex.astro`、`src/pages/openworkspace-index/[module].json.ts` | 内容搜索、标签筛选、分页和公开 JSON 索引 |
 | 资源页面 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 图标、附件和 HTML 资源响应 |
 | 工作区布局 | `src/layouts/WorkspaceLayout.astro` | 模块抽屉、目录栏拖动和收起交互 |
 | 目录树 | `src/components/DirectoryTree.astro` | 递归目录及当前页面状态 |
@@ -93,11 +95,11 @@ Astro 内容页面         静态资源路由
 - 支持的内容扩展名是 `.md`、`.html` 和 `.htm`。
 - 模块目录名必须与配置中的 `id` 一致。
 - 配置路径必须留在所属模块目录内，符号链接不参与扫描。
-- 模块首页默认读取模块根 `index.md`；也可指向 `content/` 文件，根首页不进入目录树；只有首页时允许 `contentDir` 不存在。
+- 模块首页优先读取根 `index.md`，也可显式指向内容文件；根首页不存在时自动生成内容索引页，`index.type` 可强制使用生成模式。
 - 文件相对路径决定 URL；移动或重命名内容会改变外部链接。
 - `authenticated` 和 `allowlist` 当前只表示“不进入静态构建”，尚未实现登录访问。
 - `private: true` 只隐藏导航，页面仍在 `<distRoot>/` 中，不能用于保护敏感内容。
-- Frontmatter 的 `create` 控制目录树排序，`tags` 缺省为 `默认`；`order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
+- Frontmatter 的 `create` 控制目录树和自动首页排序，缺省为 2000-01-01；`tags` 缺省为空数组；`order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
 
 ## 环境与命令
 

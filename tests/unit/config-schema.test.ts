@@ -9,13 +9,33 @@ describe("配置校验", () => {
       access: "public",
       contentDir: "./content",
       icon: "./icon.svg",
-      index: "index.md",
       order: 100,
       private: false,
       publish: true,
       runtime: "static",
       showDirectoryTree: false,
     });
+    expect(config.index).toBeUndefined();
+  });
+
+  it("支持生成式模块首页及分页大小", () => {
+    expect(
+      parseModuleConfig({
+        id: "articles",
+        title: "文章",
+        index: { type: "generated" },
+      }),
+    ).toMatchObject({
+      index: { type: "generated", pageSize: 20 },
+    });
+
+    expect(() =>
+      parseModuleConfig({
+        id: "articles",
+        title: "文章",
+        index: { type: "generated", pageSize: 0 },
+      }),
+    ).toThrow();
   });
 
   it("要求 server 模块提供服务入口", () => {

@@ -2,6 +2,7 @@
 import { getEntry, render } from "astro:content";
 import type { MarkdownHeading } from "astro";
 import ArticleToc from "../../components/ArticleToc.astro";
+import GeneratedModuleIndex from "../../components/GeneratedModuleIndex.astro";
 import {
   getContentRoutePaths,
   loadSiteManifest,
@@ -51,7 +52,13 @@ if (route.kind === "markdown") {
   pageTitle={pageTitle}
 >
   {
-    MarkdownContent ? (
+    route.kind === "generated-index" ? (
+      <GeneratedModuleIndex
+        entries={route.indexEntries ?? []}
+        moduleTitle={activeModule.title}
+        pageSize={route.indexPageSize ?? 20}
+      />
+    ) : MarkdownContent ? (
       <div class:list={["markdown-page", { "has-article-toc": showArticleToc }]}>
         {showArticleToc && <ArticleToc headings={articleHeadings} />}
         <article class="markdown-content">

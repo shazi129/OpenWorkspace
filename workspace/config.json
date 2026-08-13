@@ -1,6 +1,6 @@
 {
   "title": "OpenWorkspace",
   "description": "由内容驱动的个人网站",
-  "defaultModule": "introduction"
+  "defaultModule": "articles"
 }
 

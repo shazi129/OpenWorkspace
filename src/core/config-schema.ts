@@ -6,6 +6,13 @@ const relativePathSchema = z
   .refine((value) => !value.includes("\0"), "路径不能包含空字符")
   .refine((value) => !/^(?:[a-zA-Z]:[\\/]|[\\/])/.test(value), "路径必须是相对路径");
 
+const generatedIndexSchema = z
+  .object({
+    type: z.literal("generated"),
+    pageSize: z.number().int().min(1).max(100).default(20),
+  })
+  .strict();
+
 export const globalConfigSchema = z
   .object({
     title: z.string().min(1).default("OpenWorkspace"),
@@ -32,7 +39,7 @@ export const moduleConfigSchema = z
     icon: relativePathSchema.default("./icon.svg"),
     contentDir: relativePathSchema.default("./content"),
     showDirectoryTree: z.boolean().default(false),
-    index: relativePathSchema.default("index.md"),
+    index: z.union([relativePathSchema, generatedIndexSchema]).optional(),
     runtime: z.enum(["static", "client", "server"]).default("static"),
     serverEntry: relativePathSchema.optional(),
   })

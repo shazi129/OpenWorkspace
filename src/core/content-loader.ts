@@ -6,7 +6,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import {
-  DEFAULT_CONTENT_TAG,
+  DEFAULT_CONTENT_CREATE_TIME,
   readContentMetadata,
 } from "./content-metadata";
 import { resolveWorkspaceRoot } from "./openworkspace-config.mjs";
@@ -17,6 +17,8 @@ import {
 } from "./config-schema";
 import type {
   ContentFile,
+  ContentIndexEntry,
+  ContentIndexRouteProps,
   ContentRouteProps,
   ContentTreeNode,
   ModuleManifest,
@@ -121,7 +123,7 @@ function metadataForContent(
 ) {
   return kind === "markdown"
     ? readContentMetadata(absolutePath)
-    : { tags: [DEFAULT_CONTENT_TAG] };
+    : { createTime: DEFAULT_CONTENT_CREATE_TIME, tags: [], title: undefined };
 }
 
 function listFiles(directory: string): string[] {
@@ -152,6 +154,7 @@ function buildContentFiles(
     const label = path.basename(relativePath, path.extname(relativePath));
     const moduleRelativePath = toPosix(path.relative(moduleDir, absolutePath));
     const metadata = metadataForContent(absolutePath, kind);
+    const title = metadata.title ?? label;
 
     return [
       {
@@ -171,6 +174,7 @@ function buildContentFiles(
         relativePath,
         slug,
         tags: metadata.tags,
+        title,
       },
     ];
   });
@@ -189,6 +193,7 @@ function buildModuleIndexFile(
 
   const relativePath = toPosix(path.relative(moduleDir, indexPath));
   const metadata = metadataForContent(indexPath, kind);
+  const label = path.basename(indexPath, path.extname(indexPath));
   return {
     absolutePath: indexPath,
     createTime: metadata.createTime,
@@ -198,12 +203,37 @@ function buildModuleIndexFile(
         : undefined,
     href: contentHref(moduleId, ""),
     kind,
-    label: path.basename(indexPath, path.extname(indexPath)),
+    label,
     rawUrl: kind === "html" ? rawAssetUrl(moduleId, relativePath) : undefined,
     relativePath,
     slug: "",
     tags: metadata.tags,
+    title: metadata.title ?? label,
   };
+}
+
+function compareContentIndex(
+  left: ContentIndexEntry,
+  right: ContentIndexEntry,
+): number {
+  return (
+    Date.parse(right.create) - Date.parse(left.create) ||
+    collator.compare(left.title, right.title)
+  );
+}
+
+export function buildContentIndex(
+  contentFiles: readonly ContentFile[],
+): ContentIndexEntry[] {
+  return contentFiles
+    .map(({ createTime, href, kind, tags, title }) => ({
+      create: createTime,
+      href,
+      kind,
+      tags,
+      title,
+    }))
+    .sort(compareContentIndex);
 }
 
 function earliestCreateTime(nodes: ContentTreeNode[]): string | undefined {
@@ -306,14 +336,30 @@ export function buildContentTree(
 function validateModulePaths(
   moduleDir: string,
   config: ModuleConfig,
-): { contentDir: string; iconPath: string; indexPath: string } {
+): {
+  contentDir: string;
+  iconPath: string;
+  indexMode: "content" | "generated";
+  indexPageSize: number;
+  indexPath?: string;
+} {
   const contentDir = resolveInside(moduleDir, config.contentDir, "contentDir");
   const iconPath = resolveInside(moduleDir, config.icon, "icon");
-  const indexPath = resolveInside(moduleDir, config.index, "index");
+  const configuredIndex = config.index;
+  const conventionalIndexPath = resolveInside(moduleDir, "index.md", "index");
+  const generatedIndex =
+    typeof configuredIndex === "object" ||
+    (configuredIndex === undefined && !existsSync(conventionalIndexPath));
+  const indexPath = generatedIndex
+    ? undefined
+    : resolveInside(moduleDir, configuredIndex ?? "index.md", "index");
+  const indexMode = generatedIndex ? "generated" : "content";
+  const indexPageSize =
+    typeof configuredIndex === "object" ? configuredIndex.pageSize : 20;
 
   for (const [label, target] of [
     ["icon", iconPath],
-    ["index", indexPath],
+    ...(indexPath ? [["index", indexPath] as const] : []),
   ] as const) {
     if (!existsSync(target)) {
       throw new Error(`模块 ${config.id} 的 ${label} 不存在：${target}`);
@@ -326,15 +372,20 @@ function validateModulePaths(
 
   const legacyContentIndex = listFiles(contentDir).find(
     (filePath) =>
-      toPosix(path.relative(contentDir, filePath)).toLowerCase() === "index.md",
+      /^index\.(?:md|html?)$/i.test(
+        toPosix(path.relative(contentDir, filePath)),
+      ),
   );
   if (legacyContentIndex) {
     throw new Error(
-      `模块 ${config.id} 的 contentDir 根目录不能包含 index.md，请将它移动到模块目录`,
+      `模块 ${config.id} 的 contentDir 根目录不能包含 index 文件，请将它移动到模块目录`,
     );
   }
 
-  if (!contentExtensions.has(path.extname(indexPath).toLowerCase())) {
+  if (
+    indexPath &&
+    !contentExtensions.has(path.extname(indexPath).toLowerCase())
+  ) {
     throw new Error(`模块 ${config.id} 的 index 必须是 Markdown 或 HTML 文件`);
   }
 
@@ -351,7 +402,7 @@ function validateModulePaths(
     }
   }
 
-  return { contentDir, iconPath, indexPath };
+  return { contentDir, iconPath, indexMode, indexPageSize, indexPath };
 }
 
 function loadModule(
@@ -371,22 +422,33 @@ function loadModule(
   // 仍属于可通过 URL 访问的公开静态内容。
   if (!config.publish || config.access !== "public") return undefined;
 
-  const { contentDir, iconPath, indexPath } = validateModulePaths(moduleDir, config);
+  const {
+    contentDir,
+    iconPath,
+    indexMode,
+    indexPageSize,
+    indexPath,
+  } = validateModulePaths(moduleDir, config);
   const scannedContentFiles = buildContentFiles(
     config.id,
     moduleDir,
     contentDir,
     modulesRoot,
   );
-  const contentIndexFile = scannedContentFiles.find(
-    (file) => path.resolve(file.absolutePath) === path.resolve(indexPath),
-  );
-  const indexFile =
-    contentIndexFile ??
-    buildModuleIndexFile(config.id, moduleDir, indexPath, modulesRoot);
-  const contentFiles = contentIndexFile
-    ? scannedContentFiles
-    : [indexFile, ...scannedContentFiles];
+  const contentIndexFile = indexPath
+    ? scannedContentFiles.find(
+        (file) => path.resolve(file.absolutePath) === path.resolve(indexPath),
+      )
+    : undefined;
+  const indexFile = indexPath
+    ? (contentIndexFile ??
+      buildModuleIndexFile(config.id, moduleDir, indexPath, modulesRoot))
+    : undefined;
+  const contentFiles = indexFile
+    ? contentIndexFile
+      ? scannedContentFiles
+      : [indexFile, ...scannedContentFiles]
+    : scannedContentFiles;
 
   const duplicateSlug = contentFiles.find(
     (file, index) =>
@@ -397,15 +459,19 @@ function loadModule(
   }
 
   const iconRelativePath = toPosix(path.relative(moduleDir, iconPath));
+  const contentIndex = buildContentIndex(scannedContentFiles);
 
   return {
     ...config,
     absoluteContentDir: contentDir,
     absoluteModuleDir: moduleDir,
     contentFiles,
-    href: indexFile.href,
+    contentIndex,
+    href: indexFile?.href ?? contentHref(config.id, ""),
     iconUrl: rawAssetUrl(config.id, iconRelativePath),
-    indexSlug: indexFile.slug,
+    indexMode,
+    indexPageSize,
+    indexSlug: indexFile?.slug ?? "",
     tree: buildContentTree(contentDir, config.id, scannedContentFiles),
   };
 }
@@ -446,8 +512,8 @@ export function loadSiteManifest(workspaceRoot = WORKSPACE_ROOT): SiteManifest {
 }
 
 export function getContentRoutePaths(workspaceRoot = WORKSPACE_ROOT) {
-  return loadSiteManifest(workspaceRoot).modules.flatMap((module) =>
-    module.contentFiles.map((file) => ({
+  return loadSiteManifest(workspaceRoot).modules.flatMap((module) => {
+    const contentRoutes = module.contentFiles.map((file) => ({
       params: {
         module: module.id,
         slug: file.slug || undefined,
@@ -462,8 +528,36 @@ export function getContentRoutePaths(workspaceRoot = WORKSPACE_ROOT) {
         relativePath: file.relativePath,
         slug: file.slug,
       } satisfies ContentRouteProps,
-    })),
-  );
+    }));
+
+    return module.indexMode === "generated"
+      ? [
+          {
+            params: { module: module.id, slug: undefined },
+            props: {
+              href: module.href,
+              indexEntries: module.contentIndex,
+              indexPageSize: module.indexPageSize,
+              kind: "generated-index",
+              label: module.title,
+              moduleId: module.id,
+              relativePath: "",
+              slug: "",
+            } satisfies ContentRouteProps,
+          },
+          ...contentRoutes,
+        ]
+      : contentRoutes;
+  });
+}
+
+export function getContentIndexRoutePaths(workspaceRoot = WORKSPACE_ROOT) {
+  return loadSiteManifest(workspaceRoot).modules.map((module) => ({
+    params: { module: module.id },
+    props: {
+      entries: module.contentIndex,
+    } satisfies ContentIndexRouteProps,
+  }));
 }
 
 function contentType(filePath: string): string {

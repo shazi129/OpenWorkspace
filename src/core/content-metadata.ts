@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
 import { load } from "js-yaml";
 
-export const DEFAULT_CONTENT_TAG = "默认";
+export const DEFAULT_CONTENT_CREATE_TIME = "2000-01-01T00:00:00.000Z";
 
 export interface ContentMetadata {
-  createTime?: string;
+  createTime: string;
   tags: string[];
+  title?: string;
 }
 
 const frontmatterPattern =
@@ -17,7 +18,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function normalizeContentTags(value: unknown): string[] {
   if (value === undefined || value === null || value === "") {
-    return [DEFAULT_CONTENT_TAG];
+    return [];
   }
 
   const values = Array.isArray(value) ? value : [value];
@@ -30,14 +31,16 @@ export function normalizeContentTags(value: unknown): string[] {
     .map((tag) => tag.trim())
     .filter(Boolean);
 
-  return tags.length > 0 ? [...new Set(tags)] : [DEFAULT_CONTENT_TAG];
+  return [...new Set(tags)];
 }
 
 export function normalizeCreateTime(
   value: unknown,
   sourceLabel = "Markdown",
-): string | undefined {
-  if (value === undefined || value === null || value === "") return undefined;
+): string {
+  if (value === undefined || value === null || value === "") {
+    return DEFAULT_CONTENT_CREATE_TIME;
+  }
 
   if (!(value instanceof Date) && typeof value !== "string") {
     throw new Error(`${sourceLabel} 的 create 必须是日期时间`);
@@ -55,7 +58,7 @@ export function readContentMetadata(filePath: string): ContentMetadata {
   const source = readFileSync(filePath, "utf8");
   const frontmatter = source.match(frontmatterPattern)?.[1];
   if (frontmatter === undefined) {
-    return { tags: [DEFAULT_CONTENT_TAG] };
+    return { createTime: DEFAULT_CONTENT_CREATE_TIME, tags: [] };
   }
 
   let parsed: unknown;
@@ -69,9 +72,17 @@ export function readContentMetadata(filePath: string): ContentMetadata {
 
   const data = isRecord(parsed) ? parsed : {};
   try {
+    if (
+      data.title !== undefined &&
+      (typeof data.title !== "string" || data.title.trim().length === 0)
+    ) {
+      throw new Error(`${filePath} 的 title 必须是非空字符串`);
+    }
+
     return {
       createTime: normalizeCreateTime(data.create, filePath),
       tags: normalizeContentTags(data.tags),
+      ...(typeof data.title === "string" ? { title: data.title.trim() } : {}),
     };
   } catch (error) {
     throw new Error(`Markdown 元数据无效：${filePath}`, { cause: error });

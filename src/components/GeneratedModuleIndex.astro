@@ -1,0 +1,238 @@
+---
+import type { ContentIndexEntry } from "../core/types";
+
+interface Props {
+  entries: ContentIndexEntry[];
+  moduleTitle: string;
+  pageSize: number;
+}
+
+const { entries, moduleTitle, pageSize } = Astro.props;
+const initialEntries = entries.slice(0, pageSize);
+const availableTags = [...new Set(entries.flatMap((entry) => entry.tags))].sort(
+  (left, right) => left.localeCompare(right, "zh-CN"),
+);
+const serializedEntries = JSON.stringify(entries).replaceAll("<", "\\u003c");
+const totalPages = Math.max(1, Math.ceil(entries.length / pageSize));
+const displayDate = (value: string) => value.slice(0, 10);
+---
+
+<section class="generated-index" data-generated-index data-page-size={pageSize}>
+  <header class="generated-index-header">
+    <p class="generated-index-eyebrow">内容索引</p>
+    <h1>{moduleTitle}</h1>
+    <p data-index-summary>共 {entries.length} 篇，按创建时间从近到远排列</p>
+  </header>
+
+  <form class="generated-index-filters" data-index-form role="search">
+    <label>
+      <span>搜索标题或标签</span>
+      <input
+        type="search"
+        name="q"
+        placeholder="输入标题或标签"
+        autocomplete="off"
+        data-index-query
+      />
+    </label>
+    <label>
+      <span>标签</span>
+      <select name="tag" data-index-tag>
+        <option value="">全部标签</option>
+        {availableTags.map((tag) => <option value={tag}>{tag}</option>)}
+      </select>
+    </label>
+    <button type="button" class="generated-index-clear" data-index-clear>
+      清除筛选
+    </button>
+  </form>
+
+  <ol class="generated-index-list" data-index-results>
+    {
+      initialEntries.map((entry) => (
+        <li>
+          <article class="generated-index-card">
+            <div class="generated-index-card-meta">
+              <time datetime={entry.create}>{displayDate(entry.create)}</time>
+              <span>{entry.kind === "markdown" ? "Markdown" : "HTML"}</span>
+            </div>
+            <h2><a href={entry.href}>{entry.title}</a></h2>
+            {entry.tags.length > 0 && (
+              <ul class="generated-index-tags" aria-label="标签">
+                {entry.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+            )}
+          </article>
+        </li>
+      ))
+    }
+  </ol>
+
+  <p class="generated-index-empty" data-index-empty hidden>
+    没有符合条件的内容。
+  </p>
+
+  <nav class="generated-index-pagination" aria-label="内容分页">
+    <button type="button" data-index-previous disabled>上一页</button>
+    <span data-index-page-summary>第 1 / {totalPages} 页</span>
+    <button type="button" data-index-next disabled={totalPages === 1}>下一页</button>
+  </nav>
+
+  <script
+    type="application/json"
+    data-index-data
+    is:inline
+    set:html={serializedEntries}
+  />
+</section>
+
+<script>
+  interface IndexEntry {
+    create: string;
+    href: string;
+    kind: "markdown" | "html";
+    tags: string[];
+    title: string;
+  }
+
+  const normalizeSearchValue = (value: string) =>
+    value.normalize("NFKC").toLocaleLowerCase();
+
+  const createEntryElement = (entry: IndexEntry) => {
+    const item = document.createElement("li");
+    const article = document.createElement("article");
+    article.className = "generated-index-card";
+
+    const metadata = document.createElement("div");
+    metadata.className = "generated-index-card-meta";
+    const time = document.createElement("time");
+    time.dateTime = entry.create;
+    time.textContent = entry.create.slice(0, 10);
+    const kind = document.createElement("span");
+    kind.textContent = entry.kind === "markdown" ? "Markdown" : "HTML";
+    metadata.append(time, kind);
+
+    const heading = document.createElement("h2");
+    const link = document.createElement("a");
+    link.href = entry.href;
+    link.textContent = entry.title;
+    heading.append(link);
+
+    article.append(metadata, heading);
+    if (entry.tags.length > 0) {
+      const tags = document.createElement("ul");
+      tags.className = "generated-index-tags";
+      tags.setAttribute("aria-label", "标签");
+      for (const value of entry.tags) {
+        const tag = document.createElement("li");
+        tag.textContent = value;
+        tags.append(tag);
+      }
+      article.append(tags);
+    }
+
+    item.append(article);
+    return item;
+  };
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-generated-index]")) {
+    const data = root.querySelector<HTMLScriptElement>("[data-index-data]");
+    const queryInput = root.querySelector<HTMLInputElement>("[data-index-query]");
+    const tagSelect = root.querySelector<HTMLSelectElement>("[data-index-tag]");
+    const clearButton = root.querySelector<HTMLButtonElement>("[data-index-clear]");
+    const results = root.querySelector<HTMLOListElement>("[data-index-results]");
+    const empty = root.querySelector<HTMLElement>("[data-index-empty]");
+    const previous = root.querySelector<HTMLButtonElement>("[data-index-previous]");
+    const next = root.querySelector<HTMLButtonElement>("[data-index-next]");
+    const pageSummary = root.querySelector<HTMLElement>("[data-index-page-summary]");
+    const resultSummary = root.querySelector<HTMLElement>("[data-index-summary]");
+    const form = root.querySelector<HTMLFormElement>("[data-index-form]");
+    if (
+      !data ||
+      !queryInput ||
+      !tagSelect ||
+      !clearButton ||
+      !results ||
+      !empty ||
+      !previous ||
+      !next ||
+      !pageSummary ||
+      !resultSummary ||
+      !form
+    ) continue;
+
+    const entries = JSON.parse(data.textContent ?? "[]") as IndexEntry[];
+    const pageSize = Number.parseInt(root.dataset.pageSize ?? "20", 10);
+    const url = new URL(window.location.href);
+    let currentPage = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+    queryInput.value = url.searchParams.get("q") ?? "";
+    tagSelect.value = url.searchParams.get("tag") ?? "";
+
+    const render = (replaceUrl = true) => {
+      const query = normalizeSearchValue(queryInput.value.trim());
+      const selectedTag = tagSelect.value;
+      const filtered = entries.filter((entry) => {
+        const matchesQuery =
+          query.length === 0 ||
+          normalizeSearchValue(entry.title).includes(query) ||
+          entry.tags.some((tag) => normalizeSearchValue(tag).includes(query));
+        return matchesQuery && (!selectedTag || entry.tags.includes(selectedTag));
+      });
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      currentPage = Math.min(currentPage, totalPages);
+      const pageEntries = filtered.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize,
+      );
+
+      results.replaceChildren(...pageEntries.map(createEntryElement));
+      results.hidden = pageEntries.length === 0;
+      empty.hidden = pageEntries.length > 0;
+      previous.disabled = currentPage <= 1;
+      next.disabled = currentPage >= totalPages;
+      pageSummary.textContent = `第 ${currentPage} / ${totalPages} 页`;
+      resultSummary.textContent = `找到 ${filtered.length} 篇内容，按创建时间从近到远排列`;
+
+      if (replaceUrl) {
+        const nextUrl = new URL(window.location.href);
+        const setParameter = (name: string, value: string) => {
+          if (value) nextUrl.searchParams.set(name, value);
+          else nextUrl.searchParams.delete(name);
+        };
+        setParameter("q", queryInput.value.trim());
+        setParameter("tag", selectedTag);
+        setParameter("page", currentPage > 1 ? String(currentPage) : "");
+        window.history.replaceState(null, "", nextUrl);
+      }
+    };
+
+    form.addEventListener("submit", (event) => event.preventDefault());
+    queryInput.addEventListener("input", () => {
+      currentPage = 1;
+      render();
+    });
+    tagSelect.addEventListener("change", () => {
+      currentPage = 1;
+      render();
+    });
+    clearButton.addEventListener("click", () => {
+      queryInput.value = "";
+      tagSelect.value = "";
+      currentPage = 1;
+      render();
+      queryInput.focus();
+    });
+    previous.addEventListener("click", () => {
+      currentPage -= 1;
+      render();
+      root.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    next.addEventListener("click", () => {
+      currentPage += 1;
+      render();
+      root.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    render(false);
+  }
+</script>

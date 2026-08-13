@@ -18,7 +18,8 @@
 - 只有模块首页时允许省略空的 `contentDir`，避免 Git 部署后因空目录丢失导致构建失败。
 - Markdown 增加 `$...$` 和 `$$...$$` LaTeX 公式渲染，静态输出包含 KaTeX HTML、MathML、样式和字体。
 - Markdown 中单独一行的原生 HTML `<img>` 支持相对图片路径，并在构建时保留自定义样式和属性。
-- 文章增加 `create` 和 `tags` 元数据，标签缺省为 `默认`，目录树按文章及目录创建时间从近到远排列。
+- 文章增加 `create` 和 `tags` 元数据，目录树按文章及目录创建时间从近到远排列。
+- 模块缺少自定义首页时自动生成按时间排序的分页内容首页，支持标题与标签搜索，并为公开模块输出精简 JSON 索引。
 - 新增 `scripts/preview.bat`，通过 fnm 自动切换 Node 版本后构建并启动预览。
 - 新增 `scripts/install.bat`，一键安装 fnm、Node 版本及项目依赖。
 - 安装文档补充 Windows 下 fnm 安装方式。
@@ -26,6 +27,7 @@
 
 ### Changed
 
+- 内容缺少 `create` 时默认使用 2000-01-01；`tags` 允许缺少或留空并规范化为空数组。
 - 将文章路径中的半角 `%` 调整为全角 `％`，避开 Astro 静态路由的百分号解码限制。
 - 私有内容根目录由 `data/` 调整为 `workspace/`，模块统一移动到 `workspace/modules/`。
 - 模块配置增加 `static`、`client`、`server` 三种运行模式。

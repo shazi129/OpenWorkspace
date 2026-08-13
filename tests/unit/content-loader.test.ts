@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildContentTree,
+  getContentIndexRoutePaths,
   getContentRoutePaths,
   getRawAssetRoutePaths,
   loadSiteManifest,
@@ -37,6 +38,7 @@ describe("内容目录树", () => {
 
     expect(buildContentTree(root, "articles")).toEqual([
       {
+        createTime: "2000-01-01T00:00:00.000Z",
         href: "/articles/%E5%8D%95%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95/%E6%96%87%E7%AB%A0/",
         kind: "markdown",
         label: "文章",
@@ -77,7 +79,9 @@ describe("内容目录树", () => {
 });
 
 describe("模块首页", () => {
-  function createModule(index?: string): string {
+  function createModule(
+    index?: string | { type: "generated"; pageSize?: number },
+  ): string {
     const root = createContentRoot();
     createFile(
       root,
@@ -90,7 +94,7 @@ describe("模块首页", () => {
       JSON.stringify({
         id: "articles",
         title: "文章",
-        ...(index ? { index } : {}),
+        ...(index !== undefined ? { index } : {}),
       }),
     );
     createFile(root, "modules/articles/icon.svg", "<svg></svg>");
@@ -107,6 +111,73 @@ describe("模块首页", () => {
     expect(module.indexSlug).toBe("");
     expect(module.tree).toEqual([
       expect.objectContaining({ label: "文章", slug: "文章" }),
+    ]);
+  });
+
+  it("没有配置和 index.md 时自动生成按时间排序的模块首页与索引", () => {
+    const root = createModule();
+    createFile(
+      root,
+      "modules/articles/content/近期文章.md",
+      "---\ntitle: 最近一篇\ncreate: 2026-08-13 10:00:00\ntags: 技术, Astro\n---\n",
+    );
+    createFile(root, "modules/articles/content/旧文章.md", "# 旧文章");
+
+    const module = loadSiteManifest(root).modules[0];
+    expect(module).toMatchObject({
+      href: "/articles/",
+      indexMode: "generated",
+      indexPageSize: 20,
+      indexSlug: "",
+    });
+    expect(module.contentIndex).toEqual([
+      expect.objectContaining({
+        title: "最近一篇",
+        tags: ["技术", "Astro"],
+      }),
+      expect.objectContaining({
+        create: "2000-01-01T00:00:00.000Z",
+        title: "旧文章",
+        tags: [],
+      }),
+    ]);
+    expect(getContentRoutePaths(root)).toContainEqual(
+      expect.objectContaining({
+        params: { module: "articles", slug: undefined },
+        props: expect.objectContaining({ kind: "generated-index" }),
+      }),
+    );
+    expect(getContentIndexRoutePaths(root)).toEqual([
+      {
+        params: { module: "articles" },
+        props: { entries: module.contentIndex },
+      },
+    ]);
+  });
+
+  it("显式 generated 配置可以覆盖已有 index.md 并调整分页", () => {
+    const root = createModule({ type: "generated", pageSize: 5 });
+    createFile(root, "modules/articles/index.md");
+    createFile(root, "modules/articles/content/文章.md");
+
+    expect(loadSiteManifest(root).modules[0]).toMatchObject({
+      indexMode: "generated",
+      indexPageSize: 5,
+    });
+  });
+
+  it("自动首页索引包含 HTML 并使用文件名、默认时间和空标签", () => {
+    const root = createModule();
+    createFile(root, "modules/articles/content/小工具.html", "<h1>工具</h1>");
+
+    expect(loadSiteManifest(root).modules[0].contentIndex).toEqual([
+      {
+        create: "2000-01-01T00:00:00.000Z",
+        href: "/articles/%E5%B0%8F%E5%B7%A5%E5%85%B7/",
+        kind: "html",
+        tags: [],
+        title: "小工具",
+      },
     ]);
   });
 
@@ -147,13 +218,13 @@ describe("模块首页", () => {
     );
   });
 
-  it("拒绝 content 根目录中的 index.md", () => {
+  it("拒绝 content 根目录中的 index 文件", () => {
     const root = createModule();
     createFile(root, "modules/articles/index.md");
     createFile(root, "modules/articles/content/index.md");
 
     expect(() => loadSiteManifest(root)).toThrow(
-      "contentDir 根目录不能包含 index.md",
+      "contentDir 根目录不能包含 index 文件",
     );
   });
 
@@ -285,5 +356,8 @@ describe("模块发布控制", () => {
         (route) => route.params.module === "unpublished",
       ),
     ).toBe(false);
+    expect(
+      getContentIndexRoutePaths(root).map((route) => route.params.module),
+    ).toEqual(["articles", "private-tools"]);
   });
 });

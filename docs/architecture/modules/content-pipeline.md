@@ -16,6 +16,7 @@
 | `src/content.config.ts` | 已发布模块的 Markdown 集合、Frontmatter schema 和 entry ID |
 | `src/markdown/workspace-markdown-loader.ts` | 通过真实文件路径读取 Markdown，支持文件名中的 `#` |
 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 原始资源响应、安全响应头 |
+| `src/pages/openworkspace-index/[module].json.ts` | 每个公开模块的精简内容索引 |
 
 ## 清单生成
 
@@ -25,17 +26,17 @@
 2. 枚举 `<workspaceRoot>/modules/` 下的模块目录。
 3. 要求目录名与模块 `id` 一致。
 4. 排除 `publish: false` 或非 `public` 模块；保留只隐藏导航的 private 模块。
-5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部；`icon` 和 `index` 必须存在，`contentDir` 不存在时按空目录处理，存在时必须是目录。
-6. 读取 Markdown Frontmatter，将 `create` 和 `tags` 写入扁平 `contentFiles`，再生成递归 `tree`。
+5. 相对模块目录校验 `contentDir`、`icon` 和字符串形式的 `index` 都位于模块内部；自定义首页必须存在，`contentDir` 不存在时按空目录处理，存在时必须是目录。
+6. 读取 Markdown Frontmatter，将标题、`create` 和 `tags` 写入扁平 `contentFiles`，再生成递归 `tree` 和按时间排序的 `contentIndex`。
 7. 先排列正数 `order` 顶部组，再排列负数底部组；同值按标题排序，并确认默认模块存在。
 
 Astro 内容集合复用清单中的已发布模块范围，因此 `publish: false`、`authenticated` 和 `allowlist` 模块的 Markdown 不参与内容同步。工程自定义 loader 使用绝对文件路径读取正文，用 `pathToFileURL()` 提供渲染上下文，并把存入 Astro 的相对 `filePath` 按路径段编码，避免正文读取和相对图片解析时把文件名中的 `#` 误解为 URL fragment。
 
 ## 内容树规则
 
-- 同级目录和文件按创建时间从近到远统一排序；无时间节点排在有时间节点之后，时间相同时按中文数字感知名称排序。
-- 文件节点的时间来自 `create`；目录节点的时间是已填写时间的后代文章中的最早值。
-- `tags` 接受逗号分隔字符串或字符串数组，缺少时规范化为 `默认`，供后续搜索功能使用。
+- 同级目录和文件按创建时间从近到远统一排序，时间相同时按中文数字感知名称排序。
+- 文件节点的时间来自 `create`，缺少时使用 2000-01-01；目录节点的时间是后代文章中的最早值。
+- `tags` 接受逗号分隔字符串、字符串数组或空值，缺少或为空时规范化为空数组。
 - 非 Markdown/HTML 文件不进入目录树。
 - 模块根 `index.md` 独立作为首页路由，不进入 `content/` 目录树。
 - 空目录不展示。
@@ -47,8 +48,9 @@ Astro 内容集合复用清单中的已发布模块范围，因此 `publish: fal
 
 ## URL 与资源
 
-- `index` 默认是模块根目录的 `index.md`；也可配置为 `content/` 下的内容文件。
+- 未配置 `index` 时优先使用模块根目录的 `index.md`；该文件不存在时自动生成模块索引首页。`index` 也可配置为内容路径或生成式首页对象。
 - 根首页映射到模块 URL；`content/` 首页沿用该文件 URL，并作为目录树默认定位。
+- 每个公开发布模块生成 `/openworkspace-index/<module>.json`；自动首页复用同一份内容索引进行搜索、标签筛选和分页。
 - 其他内容去掉扩展名并保留相对目录。
 - 每个 URL 段独立进行百分号编码。
 - 文件或目录名中的 `#` 保持原始文件名，并在公开 URL 中编码为 `%23`。

@@ -11,6 +11,7 @@
 | `src/layouts/WorkspaceLayout.astro` | 页面骨架、移动抽屉、目录宽度和收起交互 |
 | `src/components/ModuleNavigation.astro` | 一级模块导航 |
 | `src/components/DirectoryTree.astro` | 递归目录与文件链接 |
+| `src/components/GeneratedModuleIndex.astro` | 自动首页、标题与标签搜索、客户端分页 |
 | `src/styles/global.css` | 布局、状态、响应式和可访问性样式 |
 
 ## 桌面布局
@@ -40,6 +41,12 @@
 - 文件名保持单行，超出宽度时显示省略号；`title` 提供完整名称。
 - 当前文件使用 `aria-current="page"`。
 
+## 自动索引首页
+
+- 模块没有自定义首页时，内容区域展示按创建时间倒序排列的内容卡片。
+- 首屏在构建期渲染；浏览器脚本使用嵌入的精简索引完成标题或标签搜索、精确标签筛选和分页。
+- 查询词、标签和页码写入 URL 查询参数，页面刷新后可以恢复。
+
 ## 移动端
 
 - 一级模块导航变为左侧抽屉。
@@ -48,4 +55,4 @@
 - 桌面拖动分隔条在移动端隐藏，目录仍可整体收起。
 - `prefers-reduced-motion` 会缩短动画。
 
-行为契约见[模块导航 spec](../../specs/module-navigation.md)和[目录树 spec](../../specs/directory-tree.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。
+行为契约见[模块导航 spec](../../specs/module-navigation.md)、[目录树 spec](../../specs/directory-tree.md)和[模块自动索引首页 spec](../../specs/generated-module-index.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。

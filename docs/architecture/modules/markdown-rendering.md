@@ -51,7 +51,7 @@
 
 ## Frontmatter 现状
 
-支持 `title`、`description`、`create`、`tags`、`order` 和 `draft`。`title` 用作页面标题；`create` 和规范化后的 `tags` 同时进入内容模型，目录树使用创建时间排序；`order` 和 `draft` 尚未驱动目录排序或发布过滤。
+支持 `title`、`description`、`create`、`tags`、`order` 和 `draft`。`title` 用作页面标题和自动首页索引标题；`create` 缺少时使用 2000-01-01，`tags` 缺少或为空时使用空数组，两者同时进入目录树和模块内容索引；`order` 和 `draft` 尚未驱动目录排序或发布过滤。
 
 ## 文件路径
 
