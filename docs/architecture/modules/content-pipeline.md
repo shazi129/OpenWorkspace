@@ -2,12 +2,13 @@
 
 ## 职责
 
-该模块把 `workspace/modules/` 转换为可供 Astro 构建使用的强类型清单、内容页面参数和资源页面参数。
+该模块把 `<workspaceRoot>/modules/` 转换为可供 Astro 构建使用的强类型清单、内容页面参数和资源页面参数。
 
 ## 主要文件
 
 | 文件 | 职责 |
 | --- | --- |
+| `src/core/openworkspace-config.mjs` | 解析工作区、生成目录及输出安全边界 |
 | `src/core/config-schema.ts` | 全局/模块配置 schema、默认值、相对路径格式 |
 | `src/core/types.ts` | `ContentFile`、`ContentTreeNode`、`ModuleManifest` 等类型 |
 | `src/core/content-loader.ts` | 文件扫描、边界校验、树生成、URL 和静态路由参数 |
@@ -20,8 +21,8 @@
 
 `loadSiteManifest()` 是主要入口：
 
-1. 解析 `workspace/config.json`。
-2. 枚举 `workspace/modules/` 下的模块目录。
+1. 解析当前工作区的 `<workspaceRoot>/config.json`。
+2. 枚举 `<workspaceRoot>/modules/` 下的模块目录。
 3. 要求目录名与模块 `id` 一致。
 4. 排除 `publish: false` 或非 `public` 模块；保留只隐藏导航的 private 模块。
 5. 相对模块目录校验 `contentDir`、`icon` 和 `index` 都位于模块内部；`icon` 和 `index` 必须存在，`contentDir` 不存在时按空目录处理，存在时必须是目录。
@@ -57,7 +58,7 @@ Astro 内容集合复用清单中的已发布模块范围，因此 `publish: fal
 
 ## 不变量
 
-- `WORKSPACE_ROOT` 默认是运行目录下的 `workspace/`，可通过 `OPENWORKSPACE_WORKSPACE_ROOT` 覆盖。
+- `WORKSPACE_ROOT` 由 `OPENWORKSPACE_WORKSPACE_ROOT`、根目录 `openworkspace.config.json`、内置 `workspace/` 依次选择。
 - `services/`、模块 `server/` 和 `storage/` 不参与静态资源扫描。
 - 路径进入清单前必须经过模块边界校验。
 - 符号链接不进入内容或资源路由。

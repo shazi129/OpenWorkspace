@@ -12,10 +12,10 @@
 
 ## 修改原则
 
-- 内容创作和私有模块任务通常只修改 `workspace/`。
-- 通用服务宿主修改 `src/server/`；模块业务 API 放在对应模块的 `serverEntry` 或 `workspace/services/`。
+- 内容创作和私有模块任务通常只修改当前选中的 `<workspaceRoot>/`。
+- 通用服务宿主修改 `src/server/`；模块业务 API 放在对应模块的 `serverEntry` 或 `<workspaceRoot>/services/`。
 - 框架功能任务修改 `src/` 并补充或更新 `tests/`。
-- 不直接编辑 `dist/`、`.astro/` 或 `node_modules/`。
+- 不直接编辑 `<distRoot>/`、`.astro/` 或 `node_modules/`。
 - 不用生成代码替代通用动态路由。
 - 不绕过 `resolveInside` 等路径边界检查。
 - 不把 `authenticated` 或 `allowlist` 内容放入公开静态产物。
@@ -29,7 +29,7 @@
 | 纯文档 | 检查内部链接；运行 `npm run context` |
 | 配置 schema、加载器、Markdown 插件 | `npm test`、`npm run check`、`npm run build` |
 | Astro 组件、布局或 CSS | `npm run check`、`npm test`、`npm run build`；检查相关构建 HTML |
-| `workspace/` 内容或模块配置 | `npm run check`、`npm run build` |
+| `<workspaceRoot>/` 内容或模块配置 | `npm run check`、`npm run build` |
 | API 宿主或私有服务 | `npm test`、`npm run check`、`npm run build`；启动 `npm run api` 检查健康接口 |
 | 依赖或构建配置 | `npm test`、`npm run check`、`npm run build` |
 

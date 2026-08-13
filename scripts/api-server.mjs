@@ -1,15 +1,12 @@
-import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveWorkspaceRoot } from "../src/core/openworkspace-config.mjs";
 import {
   loadWorkspaceRoutes,
   startApiServer,
 } from "../src/server/api-server.mjs";
 
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
-const workspaceRoot = path.resolve(
-  process.env.OPENWORKSPACE_WORKSPACE_ROOT ??
-    path.join(repositoryRoot, "workspace"),
-);
+const workspaceRoot = resolveWorkspaceRoot({ frameworkRoot: repositoryRoot });
 const port = Number.parseInt(
   process.env.OPENWORKSPACE_API_PORT ?? "4174",
   10,

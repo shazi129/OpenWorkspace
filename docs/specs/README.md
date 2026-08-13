@@ -34,3 +34,4 @@ Spec 描述功能的期望行为、非目标和可验证的验收条件，不承
 
 - [目录树](directory-tree.md)
 - [Markdown TOC](markdown-toc.md)
+- [工作区与生成目录选择](workspace-selection.md)

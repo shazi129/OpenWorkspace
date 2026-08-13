@@ -12,7 +12,6 @@
 - 工具栏内置模块图标统一为轻量线性风格，并使用橙色突出当前模块。
 - 模块首页默认改为模块根 `index.md`，并支持将 `content/` 文件配置为首页和目录树默认定位。
 - 目录树站内跳转会保留已展开的兄弟目录，直接链接访问仍只展开当前路径。
-- 增加 `order: -1` 的设置模块，当前"更新"操作通过受保护的后台服务拉取仓库并重新构建。
 - 增加通用 API 宿主、私有全局服务发现和服务端模块 `serverEntry`。
 - 模块增加 `private` 导航隐藏和 `publish` 静态发布开关。
 - Markdown 文件和目录名称支持 `#`，构建时保持原有内容路径和编码 URL，同目录图片也能正确加载。
@@ -23,6 +22,7 @@
 - 新增 `scripts/preview.bat`，通过 fnm 自动切换 Node 版本后构建并启动预览。
 - 新增 `scripts/install.bat`，一键安装 fnm、Node 版本及项目依赖。
 - 安装文档补充 Windows 下 fnm 安装方式。
+- 增加 `openworkspace.config.json`，可通过 `workspaceRoot` 选择外部工作区，并通过 `distRoot` 分离静态生成物；默认继续使用内置示例和根目录 `dist/`。
 
 ### Changed
 
@@ -30,7 +30,7 @@
 - 私有内容根目录由 `data/` 调整为 `workspace/`，模块统一移动到 `workspace/modules/`。
 - 模块配置增加 `static`、`client`、`server` 三种运行模式。
 - 模块导航 `order` 支持正数顶部排序与负数底部排序，`-1` 表示最靠近底部。
-- 设置模块改为不在工具栏展示，只能通过 `/settings/` 直接访问。
+- 部署配置从框架根目录迁入 `<workspaceRoot>/deploy/`，内置工作区与外部私有工作区保持相同结构。
 
 ### Fixed
 

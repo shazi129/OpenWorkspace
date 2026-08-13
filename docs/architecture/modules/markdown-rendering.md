@@ -35,7 +35,7 @@
 3. 插件清理旧文章中嵌套的未转义 `$` 和零宽字符，并把 `$$...$$` 识别为块级展示。
 4. KaTeX 在构建阶段生成 HTML 与 MathML，页面端不需要运行公式渲染脚本。
 5. 普通 fenced code block 继续走代码高亮，不进入公式插件。
-6. KaTeX CSS 和字体由 Vite 打包到 `dist/_astro/`；块级公式过宽时在正文内横向滚动。
+6. KaTeX CSS 和字体由 Vite 打包到 `<distRoot>/_astro/`；块级公式过宽时在正文内横向滚动。
 
 正文中的美元符号需要写成 `\$`。详细行为见[Markdown LaTeX spec](../../specs/markdown-math.md)。
 

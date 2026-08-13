@@ -9,6 +9,7 @@ import {
   DEFAULT_CONTENT_TAG,
   readContentMetadata,
 } from "./content-metadata";
+import { resolveWorkspaceRoot } from "./openworkspace-config.mjs";
 import {
   parseGlobalConfig,
   parseModuleConfig,
@@ -23,12 +24,9 @@ import type {
   SiteManifest,
 } from "./types";
 
-// Astro 会把构建代码打包到 dist/.prerender，不能用 import.meta.url
+// Astro 会把构建代码打包到输出目录的 .prerender，不能用 import.meta.url
 // 反推项目根目录。所有 CLI 命令均从项目根目录运行，因此以 cwd 为准。
-export const WORKSPACE_ROOT = path.resolve(
-  process.env.OPENWORKSPACE_WORKSPACE_ROOT ??
-    path.join(process.cwd(), "workspace"),
-);
+export const WORKSPACE_ROOT = resolveWorkspaceRoot();
 
 const contentExtensions = new Set([".md", ".html", ".htm"]);
 const collator = new Intl.Collator("zh-CN", {

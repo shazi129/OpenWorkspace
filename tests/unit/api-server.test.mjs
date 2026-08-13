@@ -6,7 +6,6 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   loadWorkspaceRoutes,
@@ -31,26 +30,38 @@ afterEach(async () => {
 });
 
 describe("API 服务宿主", () => {
-  it("发现 workspace 中启用的服务", async () => {
-    const repositoryRoot = path.resolve(
-      path.dirname(fileURLToPath(import.meta.url)),
-      "../..",
+  it("发现 workspace 中启用的全局服务", async () => {
+    const repositoryRoot = mkdtempSync(
+      path.join(os.tmpdir(), "openworkspace-api-test-"),
     );
+    temporaryDirectories.push(repositoryRoot);
+    const workspaceRoot = path.join(repositoryRoot, "workspace");
+    const serviceRoot = path.join(workspaceRoot, "services", "example");
+    mkdirSync(serviceRoot, { recursive: true });
+    writeFileSync(
+      path.join(serviceRoot, "config.json"),
+      JSON.stringify({
+        id: "example",
+        entry: "./index.mjs",
+        enabled: true,
+      }),
+    );
+    writeFileSync(
+      path.join(serviceRoot, "index.mjs"),
+      'export function createRoutes() { return [{ method: "GET", path: "/api/example-service", handle() { return { body: { ok: true } }; } }]; }',
+    );
+
     const routes = await loadWorkspaceRoutes({
       repositoryRoot,
-      workspaceRoot: path.join(repositoryRoot, "workspace"),
-      env: { OPENWORKSPACE_REBUILD_TOKEN: "test-token" },
-      logger: { error() {}, info() {} },
+      workspaceRoot,
     });
 
-    expect(routes).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          method: "POST",
-          path: "/openworkspace-admin/rebuild",
-        }),
-      ]),
-    );
+    expect(routes).toEqual([
+      expect.objectContaining({
+        method: "GET",
+        path: "/api/example-service",
+      }),
+    ]);
   });
 
   it("提供健康检查并分发注册路由", async () => {

@@ -14,6 +14,7 @@ ADR 记录重要且不能仅从当前代码理解的设计决定。精确修改�
 - [ADR-0001：文件系统是内容事实来源](0001-filesystem-content-source.md)
 - [ADR-0002：构建期清单与通用静态路由](0002-build-manifest-and-generic-routes.md)
 - [ADR-0003：公共 Agent 知识与厂商适配入口分离](0003-agent-context-adapters.md)
+- [ADR-0005：可配置工作区与生成目录](0005-configurable-workspace-root.md)
 
 ## 模板
 

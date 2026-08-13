@@ -1,6 +1,6 @@
 # OpenWorkspace
 
-OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。使用者在 `workspace/` 中维护模块、页面、内容和服务，框架生成静态站点，并通过可选 API 宿主运行服务端模块。
+OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。仓库内的 `workspace/` 是可运行示例；使用者也可以选择外部工作区，在其中维护模块、页面、内容和服务。框架生成静态站点，并通过可选 API 宿主运行服务端模块。
 
 核心原则：**OpenWorkspace 不拥有用户数据，工作区文件系统是唯一事实来源。**
 
@@ -11,8 +11,21 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。使用
 - 开发和验证流程：[工作流](docs/agent/WORKFLOW.md)
 - 完整技术设计：[技术方案](docs/技术方案.md)
 - 安装和内容创作：[安装文档](docs/安装文档.md)
-- Nginx 与 systemd 示例：[部署配置](deploy/)
+- Nginx 与 systemd 配置：[工作区部署配置](workspace/deploy/)
 - 用户可见变化：[CHANGELOG](CHANGELOG.md)
+
+## 选择工作区与生成目录
+
+根目录的 `openworkspace.config.json` 指定当前工作区和静态生成目录：
+
+```json
+{
+  "workspaceRoot": "./workspace",
+  "distRoot": "./dist"
+}
+```
+
+两个相对路径都以 OpenWorkspace 仓库根目录为基准，也可以填写绝对路径。默认仍使用内置 `workspace/` 和根目录 `dist/`。若要让生成物与框架分离，可将 `distRoot` 改为 `../MyWorkspace/dist` 等外部路径；部署环境可使用优先级更高的 `OPENWORKSPACE_WORKSPACE_ROOT` 临时覆盖工作区。
 
 ## 常用命令
 

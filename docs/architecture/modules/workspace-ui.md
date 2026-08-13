@@ -10,7 +10,6 @@
 | --- | --- |
 | `src/layouts/WorkspaceLayout.astro` | 页面骨架、移动抽屉、目录宽度和收起交互 |
 | `src/components/ModuleNavigation.astro` | 一级模块导航 |
-| `src/components/WorkspaceUpdateClient.astro` | 增强设置页面中的更新操作 |
 | `src/components/DirectoryTree.astro` | 递归目录与文件链接 |
 | `src/styles/global.css` | 布局、状态、响应式和可访问性样式 |
 
@@ -31,12 +30,6 @@
 - 正数 `order` 从导航顶部向下排列；负数模块靠底部排列，其中 `-1` 最靠近底部。
 - 首个负数模块使用弹性上边距分隔上下两组；内容溢出时由导航区域滚动。
 - `private: true` 的模块在排序后从导航中排除，但仍可使用直接 URL 访问。
-
-## 设置模块
-
-- `workspace/modules/settings/` 是 private 客户端模块，构建 `/settings/` 页面但不显示在工具栏。
-- 设置页面的结构和文字位于工作区 Markdown；`WorkspaceUpdateClient.astro` 只增强带 `data-workspace-update` 标记的操作。
-- 更新令牌只保存在当前浏览器会话，页面和构建产物不包含令牌。
 
 ## 目录节点
 

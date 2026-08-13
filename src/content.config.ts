@@ -1,13 +1,10 @@
 import { defineCollection } from "astro:content";
 import { z } from "astro/zod";
-import path from "node:path";
 import { normalizeContentTags } from "./core/content-metadata";
+import { resolveWorkspaceRoot } from "./core/openworkspace-config.mjs";
 import { workspaceMarkdownLoader } from "./markdown/workspace-markdown-loader";
 
-const workspaceRoot = path.resolve(
-  process.env.OPENWORKSPACE_WORKSPACE_ROOT ??
-    path.join(process.cwd(), "workspace"),
-);
+const workspaceRoot = resolveWorkspaceRoot();
 
 const pages = defineCollection({
   loader: workspaceMarkdownLoader({ workspaceRoot }),

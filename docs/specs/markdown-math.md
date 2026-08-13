@@ -33,7 +33,7 @@ Sätteri 可以识别 Markdown 中的数学节点，但默认不开启，且启�
 
 ## 验收条件
 
-- 包含行内和块级公式的页面在 `dist/` 中出现 KaTeX 与 MathML 标记。
+- 包含行内和块级公式的页面在 `<distRoot>/` 中出现 KaTeX 与 MathML 标记。
 - 最终公式节点不再保留 `language-math math-inline` 或 `language-math math-display` 占位标记。
 - KaTeX 字体与样式进入静态构建产物。
 - `tests/unit/markdown-math.test.ts` 覆盖行内公式、块级公式、代码块和旧格式归一化。

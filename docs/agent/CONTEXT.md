@@ -4,23 +4,23 @@
 
 ## 工程目标
 
-OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护者在 `workspace/` 中添加模块、Markdown、HTML、客户端页面和私有服务；框架生成 `dist/` 静态站点，可选 API 宿主运行服务端模块。
+OpenWorkspace 是一个由工作空间驱动的个人网站框架。仓库内的 `workspace/` 提供可运行示例；维护者也可以通过根目录配置选择外部私有工作区，在其中添加模块、Markdown、HTML、客户端页面和私有服务。框架把静态站点生成到可配置的 `<distRoot>/`，可选 API 宿主运行服务端模块。
 
 核心原则：
 
-- `workspace/` 是用户模块、内容和服务的唯一事实来源。
+- 当前选中的工作区是用户模块、内容、服务和实例部署配置的唯一事实来源；内置 `workspace/` 是默认示例。
 - `src/server/` 只提供通用 HTTP 宿主，不承载用户业务 API。
-- `workspace/storage/` 永远不进入 Git 或 `dist/`。
+- 所选工作区的 `storage/` 永远不进入 Git 或 `<distRoot>/`。
 - 展示框架不接管或复制用户正文。
 - 内容错误应在构建阶段暴露，不能静默生成残缺页面。
 - 当前阶段保持纯静态输出；私有内容必须等待服务端认证方案，不能仅靠前端隐藏。
 
 ## 当前功能
 
-- 从 `workspace/config.json` 和 `workspace/modules/<module>/config.json` 加载站点及模块配置。
+- 按环境变量、`openworkspace.config.json`、内置 `workspace/` 的优先级选择工作区根目录，并通过同一配置选择静态生成目录。
+- 从 `<workspaceRoot>/config.json` 和 `<workspaceRoot>/modules/<module>/config.json` 加载站点及模块配置。
 - 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。
-- `workspace/services/` 提供工作区更新等全局私有服务。
-- `settings` 是只能通过 `/settings/` 访问的 private 客户端模块，当前提供拉取仓库并重新构建的“更新”操作。
+- `<workspaceRoot>/services/` 提供不属于单个模块的全局私有服务。
 - 使用 Zod 校验配置、模块 ID、访问级别和相对路径。
 - 扫描 Markdown、HTML 及配套资源，生成静态内容和资源路由。
 - 生成模块导航和递归目录树；只有一个内容文件的目录会被折叠。
@@ -36,7 +36,7 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。维护
 ## 数据流
 
 ```text
-workspace/config.json + workspace/modules/<module>/**
+<workspaceRoot>/config.json + <workspaceRoot>/modules/<module>/**
                 │
                 ▼
 config-schema.ts + content-loader.ts
@@ -50,13 +50,14 @@ Astro 内容页面         静态资源路由
        │                  │
        └────────┬─────────┘
                 ▼
-              dist/
+          <distRoot>/
 ```
 
 ## 关键入口
 
 | 领域 | 入口文件 | 职责 |
 | --- | --- | --- |
+| 框架根配置 | `src/core/openworkspace-config.mjs` | 解析工作区根目录、静态生成目录及安全边界 |
 | 配置模型 | `src/core/config-schema.ts` | Zod schema、默认值和路径格式校验 |
 | 内容清单 | `src/core/content-loader.ts`、`src/core/content-metadata.ts` | 扫描模块、读取文章元数据、生成内容树、页面路由和资源路由 |
 | 核心类型 | `src/core/types.ts` | 清单、内容文件、目录树和路由类型 |
@@ -66,7 +67,6 @@ Astro 内容页面         静态资源路由
 | 内容页面 | `src/pages/[module]/[...slug].astro` | Markdown/HTML 路由渲染 |
 | 资源页面 | `src/pages/openworkspace-assets/[module]/[...path].ts` | 图标、附件和 HTML 资源响应 |
 | 工作区布局 | `src/layouts/WorkspaceLayout.astro` | 模块抽屉、目录栏拖动和收起交互 |
-| 更新交互 | `src/components/WorkspaceUpdateClient.astro` | 增强设置模块中的受认证更新操作 |
 | 目录树 | `src/components/DirectoryTree.astro` | 递归目录及当前页面状态 |
 | 文章目录 | `src/components/ArticleToc.astro` | 根据 Markdown headings 生成文章 TOC |
 | 全局样式 | `src/styles/global.css` | 桌面、移动端、目录树、正文和 TOC 样式 |
@@ -75,16 +75,17 @@ Astro 内容页面         静态资源路由
 
 | 路径 | 所有者与用途 |
 | --- | --- |
-| `workspace/modules/` | 私有模块、页面、正文、附件和模块专属服务 |
-| `workspace/services/` | 工作区更新等全局私有服务 |
-| `workspace/storage/` | 数据库、缓存和任务状态；不发布、不提交 |
+| `workspace/` | 随框架发布的默认示例工作区；可由外部 `workspaceRoot` 整体替代 |
+| `<workspaceRoot>/modules/` | 模块、页面、正文、附件和模块专属服务 |
+| `<workspaceRoot>/services/` | 不属于单个模块的全局私有服务 |
+| `<workspaceRoot>/storage/` | 数据库、缓存和任务状态；不发布、不提交 |
+| `<workspaceRoot>/deploy/` | 当前实例的 Nginx、systemd 等部署配置；不进入静态构建 |
 | `src/` | 框架维护者；加载、路由、组件、交互和样式 |
 | `tests/unit/` | 配置、内容树和 Markdown 扩展测试 |
 | `tests/e2e/` | 预留端到端测试目录 |
 | `docs/` | 公共工程知识、架构、spec 和 ADR |
-| `deploy/` | Nginx 反向代理与 systemd 常驻服务示例 |
 | `设计文档/` | UI 原始设计、图片和 draw.io 源文件 |
-| `dist/` | Astro 生产构建产物，不进入版本控制 |
+| `<distRoot>/` | Astro 生产构建产物；默认是框架根目录 `dist/`，可指向外部目录 |
 | `.astro/` | Astro 生成的内容与类型缓存，不直接编辑 |
 
 ## 稳定约束
@@ -95,7 +96,7 @@ Astro 内容页面         静态资源路由
 - 模块首页默认读取模块根 `index.md`；也可指向 `content/` 文件，根首页不进入目录树；只有首页时允许 `contentDir` 不存在。
 - 文件相对路径决定 URL；移动或重命名内容会改变外部链接。
 - `authenticated` 和 `allowlist` 当前只表示“不进入静态构建”，尚未实现登录访问。
-- `private: true` 只隐藏导航，页面仍在 `dist/` 中，不能用于保护敏感内容。
+- `private: true` 只隐藏导航，页面仍在 `<distRoot>/` 中，不能用于保护敏感内容。
 - Frontmatter 的 `create` 控制目录树排序，`tags` 缺省为 `默认`；`order` 和 `draft` 已进入 schema，但当前尚未控制排序或发布。
 
 ## 环境与命令
@@ -108,7 +109,7 @@ npm run context   # 本文档 + 当前 Git 状态 + 最近提交
 npm run dev       # 本地开发服务器
 npm run check     # Astro/TypeScript 检查
 npm test          # Vitest 单元测试
-npm run build     # 检查并生成 dist/
+npm run build     # 检查并生成 <distRoot>/
 npm run preview   # 预览生产构建
 npm run api       # 启动 workspace 私有服务宿主
 ```

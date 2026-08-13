@@ -1,23 +1,26 @@
 import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadOpenWorkspaceConfig } from "../src/core/openworkspace-config.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
-const dist = resolve(root, "dist");
+const { distRoot, workspaceRoot } = loadOpenWorkspaceConfig({
+  frameworkRoot: root,
+});
 
-// Read defaultModule from workspace/config.json
-const configPath = resolve(root, "workspace", "config.json");
+// Read defaultModule from the selected workspace.
+const configPath = resolve(workspaceRoot, "config.json");
 const config = JSON.parse(readFileSync(configPath, "utf-8"));
 const defaultModule = config.defaultModule;
 
 if (!defaultModule) {
-  console.log("[postbuild] No defaultModule in workspace/config.json, skipping.");
+  console.log(`[postbuild] No defaultModule in ${configPath}, skipping.`);
   process.exit(0);
 }
 
-const srcIndex = resolve(dist, defaultModule, "index.html");
-const dstIndex = resolve(dist, "index.html");
+const srcIndex = resolve(distRoot, defaultModule, "index.html");
+const dstIndex = resolve(distRoot, "index.html");
 
 if (!existsSync(srcIndex)) {
   console.log(`[postbuild] Default module index not found: ${srcIndex}, skipping.`);
