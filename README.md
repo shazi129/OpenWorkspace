@@ -14,18 +14,19 @@ OpenWorkspace 是一个由私有工作空间驱动的个人网站框架。仓库
 - Nginx 与 systemd 配置：[工作区部署配置](workspace/deploy/)
 - 用户可见变化：[CHANGELOG](CHANGELOG.md)
 
-## 选择工作区与生成目录
+## 选择工作区、生成目录与主题
 
-根目录的 `openworkspace.config.json` 指定当前工作区和静态生成目录：
+根目录的 `openworkspace.config.json` 指定当前工作区、静态生成目录和构建主题：
 
 ```json
 {
   "workspaceRoot": "./workspace",
-  "distRoot": "./dist"
+  "distRoot": "./dist",
+  "theme": "normal"
 }
 ```
 
-两个相对路径都以 OpenWorkspace 仓库根目录为基准，也可以填写绝对路径。默认仍使用内置 `workspace/` 和根目录 `dist/`。若要让生成物与框架分离，可将 `distRoot` 改为 `../MyWorkspace/dist` 等外部路径；部署环境可使用优先级更高的 `OPENWORKSPACE_WORKSPACE_ROOT` 临时覆盖工作区。
+两个相对路径都以 OpenWorkspace 仓库根目录为基准，也可以填写绝对路径。默认仍使用内置 `workspace/`、根目录 `dist/` 和浅色 `normal` 主题；`theme` 改为 `dark` 可使用深褐色背景主题。主题文件位于 [`themes/`](themes/)。若要让生成物与框架分离，可将 `distRoot` 改为 `../MyWorkspace/dist` 等外部路径；部署环境可使用优先级更高的 `OPENWORKSPACE_WORKSPACE_ROOT` 临时覆盖工作区。
 
 模块未配置首页且根目录没有 `index.md` 时，会自动生成按创建时间排序的分页首页，并支持按标题和标签搜索。内容缺少 `create` 时使用 2000-01-01，`tags` 可以留空；详细配置见[安装文档](docs/安装文档.md)。
 

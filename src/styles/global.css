@@ -1,18 +1,11 @@
 @import "katex/dist/katex.min.css";
 
 :root {
-  color-scheme: light;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Microsoft YaHei", sans-serif;
-  color: #172033;
-  background: #f5f7fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --accent: #087fe7;
-  --border: #dce2eb;
-  --muted: #64748b;
-  --panel: #ffffff;
 }
 
 * {
@@ -76,7 +69,7 @@ summary {
   display: flex;
   overflow: visible;
   border-right: 1px solid var(--border);
-  background: #fbfcfe;
+  background: var(--surface-subtle);
   flex-direction: column;
 }
 
@@ -113,7 +106,7 @@ summary {
   padding: 0.75rem 0.35rem;
   border: 1px solid transparent;
   border-radius: 0.75rem;
-  color: #3f3554;
+  color: var(--navigation-text);
   font-size: 0.875rem;
   text-align: center;
   text-decoration: none;
@@ -122,22 +115,22 @@ summary {
 .module-link img {
   width: 38px;
   height: 38px;
+  filter: var(--module-icon-filter);
   transition: filter 140ms ease;
 }
 
 .module-link:hover {
-  background: #eef6ff;
+  background: var(--accent-hover);
 }
 
 .module-link[aria-current="page"] {
-  border-color: #ffd4c2;
-  color: #ff6422;
-  background: #fff4ef;
+  border-color: var(--active-border);
+  color: var(--active);
+  background: var(--active-surface);
 }
 
 .module-link[aria-current="page"] .module-icon {
-  filter: brightness(0) saturate(100%) invert(47%) sepia(95%) saturate(2812%)
-    hue-rotate(347deg) brightness(103%) contrast(101%);
+  filter: var(--active-icon-filter);
 }
 
 .workspace-main {
@@ -157,7 +150,7 @@ summary {
   top: 0;
   height: 100vh;
   min-width: 0;
-  background: #fbfcfe;
+  background: var(--surface-subtle);
 }
 
 .directory-sidebar {
@@ -203,9 +196,9 @@ body.directory-resizing .directory-resizer::before {
   border: 1px solid var(--border);
   border-radius: 50%;
   place-items: center;
-  color: #475467;
-  background: #fff;
-  box-shadow: 0 2px 6px rgb(15 23 42 / 10%);
+  color: var(--text-soft);
+  background: var(--panel);
+  box-shadow: var(--shadow-control);
   cursor: pointer;
 }
 
@@ -218,9 +211,9 @@ body.directory-resizing .directory-resizer::before {
 
 .directory-toggle:hover,
 .directory-toggle:focus-visible {
-  border-color: #9acbfa;
-  color: #0569c1;
-  background: #eef6ff;
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
+  background: var(--accent-hover);
 }
 
 .workspace-main.directory-collapsed {
@@ -248,7 +241,7 @@ body.directory-resizing .directory-resizer::before {
   padding: 0.42rem 0.55rem;
   overflow: hidden;
   border-radius: 0.4rem;
-  color: #475467;
+  color: var(--text-soft);
   cursor: pointer;
   text-decoration: none;
   text-overflow: ellipsis;
@@ -275,7 +268,7 @@ body.directory-resizing .directory-resizer::before {
   height: 0;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  border-left: 6px solid #667085;
+  border-left: 6px solid var(--icon);
   content: "";
   flex: 0 0 auto;
   transform-origin: 2px center;
@@ -292,7 +285,7 @@ body.directory-resizing .directory-resizer::before {
   height: 1.1rem;
   align-items: center;
   justify-content: center;
-  color: #667085;
+  color: var(--icon);
   flex: 0 0 auto;
 }
 
@@ -317,12 +310,12 @@ body.directory-resizing .directory-resizer::before {
 
 .directory-node summary:hover,
 .file-node a:hover {
-  background: #f0f4f8;
+  background: var(--hover-surface);
 }
 
 .file-node a[aria-current="page"] {
-  color: #0569c1;
-  background: #e7f3ff;
+  color: var(--accent-strong);
+  background: var(--accent-surface);
 }
 
 .file-node a[aria-current="page"] .tree-node-icon {
@@ -352,14 +345,14 @@ body.directory-resizing .directory-resizer::before {
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 0.65rem;
-  color: #475467;
-  background: #fbfcfe;
+  color: var(--text-soft);
+  background: var(--surface-subtle);
 }
 
 .article-toc-title {
   display: block;
   margin-bottom: 0.55rem;
-  color: #344054;
+    color: var(--text-strong);
   font-size: 0.9rem;
 }
 
@@ -383,8 +376,8 @@ body.directory-resizing .directory-resizer::before {
 
 .article-toc-item a:hover,
 .article-toc-item a:focus-visible {
-  color: #0569c1;
-  background: #e7f3ff;
+  color: var(--accent-strong);
+  background: var(--accent-surface);
 }
 
 .article-toc-item.depth-3 {
@@ -450,14 +443,14 @@ body.directory-resizing .directory-resizer::before {
 .markdown-content code {
   padding: 0.12rem 0.35rem;
   border-radius: 0.3rem;
-  background: #f1f5f9;
+  background: var(--code-inline);
 }
 
 .markdown-content pre {
   padding: 1rem;
   overflow-x: auto;
   border-radius: 0.75rem;
-  background: #111827;
+  background: var(--code-block);
 }
 
 .markdown-content pre code {
@@ -505,13 +498,13 @@ body.directory-resizing .directory-resizer::before {
   margin-bottom: 1.5rem;
   border: 1px solid var(--border);
   border-radius: 0.9rem;
-  background: #fbfcfe;
+  background: var(--surface-subtle);
 }
 
 .generated-index-filters label {
   display: grid;
   gap: 0.4rem;
-  color: #475467;
+  color: var(--text-soft);
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -521,10 +514,10 @@ body.directory-resizing .directory-resizer::before {
 .generated-index-filters button,
 .generated-index-pagination button {
   min-height: 42px;
-  border: 1px solid #cfd8e5;
+  border: 1px solid var(--control-border);
   border-radius: 0.55rem;
-  color: #243044;
-  background: #fff;
+  color: var(--control-text);
+  background: var(--panel);
 }
 
 .generated-index-filters input,
@@ -536,7 +529,7 @@ body.directory-resizing .directory-resizer::before {
 .generated-index-filters :is(input, select, button):focus-visible,
 .generated-index-pagination button:focus-visible {
   border-color: var(--accent);
-  outline: 3px solid rgb(8 127 231 / 16%);
+  outline: 3px solid var(--accent-focus-ring);
 }
 
 .generated-index-filters button,
@@ -547,9 +540,9 @@ body.directory-resizing .directory-resizer::before {
 
 .generated-index-filters button:hover,
 .generated-index-pagination button:not(:disabled):hover {
-  border-color: #9acbfa;
-  color: #0569c1;
-  background: #eef6ff;
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
+  background: var(--accent-hover);
 }
 
 .generated-index-list,
@@ -568,15 +561,15 @@ body.directory-resizing .directory-resizer::before {
   padding: 1.15rem 1.25rem;
   border: 1px solid var(--border);
   border-radius: 0.85rem;
-  background: #fff;
+  background: var(--panel);
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease;
 }
 
 .generated-index-card:hover {
-  border-color: #b8d9f7;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 7%);
+  border-color: var(--accent-card-border);
+  box-shadow: var(--shadow-card);
 }
 
 .generated-index-card-meta {
@@ -597,7 +590,7 @@ body.directory-resizing .directory-resizer::before {
 }
 
 .generated-index-card h2 a:hover {
-  color: #0569c1;
+  color: var(--accent-strong);
 }
 
 .generated-index-tags {
@@ -610,9 +603,9 @@ body.directory-resizing .directory-resizer::before {
 .generated-index-tags li {
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  color: #3f5f7d;
+  color: var(--tag-text);
   font-size: 0.75rem;
-  background: #edf6ff;
+  background: var(--tag-surface);
 }
 
 .generated-index-empty {
@@ -642,7 +635,7 @@ body.directory-resizing .directory-resizer::before {
   width: 100%;
   min-height: 100vh;
   border: 0;
-  background: white;
+  background: var(--panel);
 }
 
 .error-page {
@@ -703,7 +696,7 @@ body.directory-resizing .directory-resizer::before {
     height: 56px;
     padding: 0 1rem;
     border-bottom: 1px solid var(--border);
-    background: rgb(255 255 255 / 94%);
+    background: var(--mobile-header);
     backdrop-filter: blur(10px);
   }
 
@@ -716,14 +709,14 @@ body.directory-resizing .directory-resizer::before {
     border: 0;
     border-radius: 0.5rem;
     place-items: center;
-    color: #344054;
+  color: var(--text-strong);
     background: transparent;
     cursor: pointer;
   }
 
   .menu-button:hover,
   .mobile-sidebar-heading button:hover {
-    background: #eef2f6;
+    background: var(--hover-surface);
   }
 
   .module-sidebar {
@@ -732,7 +725,7 @@ body.directory-resizing .directory-resizer::before {
     z-index: 40;
     width: min(82vw, 320px);
     height: 100vh;
-    box-shadow: 12px 0 32px rgb(15 23 42 / 18%);
+    box-shadow: var(--shadow-drawer);
     transform: translateX(-105%);
     transition: transform 180ms ease;
   }
@@ -760,7 +753,7 @@ body.directory-resizing .directory-resizer::before {
     border: 0;
     opacity: 0;
     pointer-events: none;
-    background: rgb(15 23 42 / 40%);
+    background: var(--overlay);
     transition: opacity 180ms ease;
   }
 

@@ -1,8 +1,9 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export const OPENWORKSPACE_CONFIG_FILE = "openworkspace.config.json";
 const DEFAULT_DIST_ROOT = "./dist";
+const DEFAULT_THEME = "normal";
 
 function isSameOrInside(basePath, targetPath) {
   const relative = path.relative(basePath, targetPath);
@@ -59,7 +60,7 @@ function parseConfig(configPath) {
     throw new Error(`OpenWorkspace 配置必须是 JSON 对象：${configPath}`);
   }
 
-  const knownKeys = new Set(["distRoot", "workspaceRoot"]);
+  const knownKeys = new Set(["distRoot", "theme", "workspaceRoot"]);
   const unknownKeys = Object.keys(value).filter((key) => !knownKeys.has(key));
   if (unknownKeys.length > 0) {
     throw new Error(
@@ -85,8 +86,25 @@ function parseConfig(configPath) {
     );
   }
 
+  if (
+    value.theme !== undefined &&
+    (typeof value.theme !== "string" || value.theme.trim().length === 0)
+  ) {
+    throw new Error(
+      `OpenWorkspace 配置 theme 必须是非空字符串：${configPath}`,
+    );
+  }
+
+  const theme = value.theme?.trim() ?? DEFAULT_THEME;
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(theme)) {
+    throw new Error(
+      `OpenWorkspace 配置 theme 只能包含小写字母、数字和连字符：${theme}`,
+    );
+  }
+
   return {
     distRoot: value.distRoot?.trim() ?? DEFAULT_DIST_ROOT,
+    theme,
     workspaceRoot: value.workspaceRoot.trim(),
   };
 }
@@ -116,6 +134,16 @@ export function loadOpenWorkspaceConfig({
     resolvedFrameworkRoot,
     config?.distRoot ?? DEFAULT_DIST_ROOT,
   );
+  const theme = config?.theme ?? DEFAULT_THEME;
+  const themePath = path.join(
+    resolvedFrameworkRoot,
+    "themes",
+    theme,
+    "theme.css",
+  );
+  if (!existsSync(themePath) || !statSync(themePath).isFile()) {
+    throw new Error(`OpenWorkspace 主题不存在或缺少 theme.css：${themePath}`);
+  }
   validateDistRoot({
     distRoot,
     frameworkRoot: resolvedFrameworkRoot,
@@ -131,6 +159,8 @@ export function loadOpenWorkspaceConfig({
       : config
         ? "config"
         : "default",
+    theme,
+    themePath,
     workspaceRoot,
   };
 }
@@ -141,4 +171,12 @@ export function resolveWorkspaceRoot(options) {
 
 export function resolveDistRoot(options) {
   return loadOpenWorkspaceConfig(options).distRoot;
+}
+
+export function resolveTheme(options) {
+  return loadOpenWorkspaceConfig(options).theme;
+}
+
+export function resolveThemePath(options) {
+  return loadOpenWorkspaceConfig(options).themePath;
 }

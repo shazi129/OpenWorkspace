@@ -1,0 +1,39 @@
+:root {
+  color-scheme: dark;
+  color: #eee3d8;
+  background: #1b1613;
+  --accent: #d29a68;
+  --accent-border: #76543c;
+  --accent-card-border: #6a4b38;
+  --accent-focus-ring: rgb(210 154 104 / 22%);
+  --accent-hover: #392c24;
+  --accent-strong: #efb47f;
+  --accent-surface: #3a2b22;
+  --active: #ed9258;
+  --active-border: #754a35;
+  --active-icon-filter: brightness(0) saturate(100%) invert(70%) sepia(57%)
+    saturate(2436%) hue-rotate(324deg) brightness(101%) contrast(86%);
+  --active-surface: #3e2920;
+  --border: #4b3d34;
+  --code-block: #130f0d;
+  --code-inline: #382f29;
+  --control-border: #5a493e;
+  --control-text: #eadfd5;
+  --hover-surface: #352c26;
+  --icon: #b8a696;
+  --mobile-header: rgb(42 34 29 / 94%);
+  --module-icon-filter: brightness(0) saturate(100%) invert(83%) sepia(12%)
+    saturate(611%) hue-rotate(346deg) brightness(94%) contrast(89%);
+  --muted: #b5a698;
+  --navigation-text: #d7c6b7;
+  --overlay: rgb(10 7 5 / 68%);
+  --panel: #2a221d;
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 22%);
+  --shadow-control: 0 2px 6px rgb(0 0 0 / 28%);
+  --shadow-drawer: 12px 0 32px rgb(0 0 0 / 42%);
+  --surface-subtle: #241d19;
+  --tag-surface: #3b2c22;
+  --tag-text: #e0b68d;
+  --text-soft: #c8b8aa;
+  --text-strong: #f2e7dc;
+}

@@ -1,10 +1,12 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   loadOpenWorkspaceConfig,
   resolveDistRoot,
+  resolveTheme,
+  resolveThemePath,
   resolveWorkspaceRoot,
 } from "../../src/core/openworkspace-config.mjs";
 
@@ -13,7 +15,14 @@ const temporaryDirectories = [];
 function createFrameworkRoot() {
   const root = mkdtempSync(path.join(tmpdir(), "openworkspace-config-"));
   temporaryDirectories.push(root);
+  createTheme(root, "normal");
   return root;
+}
+
+function createTheme(root, name) {
+  const themeRoot = path.join(root, "themes", name);
+  mkdirSync(themeRoot, { recursive: true });
+  writeFileSync(path.join(themeRoot, "theme.css"), ":root {}\n", "utf8");
 }
 
 afterEach(() => {
@@ -30,6 +39,8 @@ describe("OpenWorkspace 配置", () => {
       distRoot: path.join(frameworkRoot, "dist"),
       frameworkRoot,
       source: "default",
+      theme: "normal",
+      themePath: path.join(frameworkRoot, "themes", "normal", "theme.css"),
       workspaceRoot: path.join(frameworkRoot, "workspace"),
     });
   });
@@ -65,6 +76,43 @@ describe("OpenWorkspace 配置", () => {
       distRoot: path.resolve(frameworkRoot, "../private-workspace/dist"),
       workspaceRoot: path.resolve(frameworkRoot, "../private-workspace"),
     });
+  });
+
+  it("默认使用 normal 并允许从根目录配置选择主题", () => {
+    const frameworkRoot = createFrameworkRoot();
+    createTheme(frameworkRoot, "dark");
+    writeFileSync(
+      path.join(frameworkRoot, "openworkspace.config.json"),
+      JSON.stringify({ workspaceRoot: "./workspace", theme: "dark" }),
+      "utf8",
+    );
+
+    expect(resolveTheme({ frameworkRoot, env: {} })).toBe("dark");
+    expect(resolveThemePath({ frameworkRoot, env: {} })).toBe(
+      path.join(frameworkRoot, "themes", "dark", "theme.css"),
+    );
+  });
+
+  it("拒绝非法或不存在的主题", () => {
+    const frameworkRoot = createFrameworkRoot();
+    const configPath = path.join(frameworkRoot, "openworkspace.config.json");
+    writeFileSync(
+      configPath,
+      JSON.stringify({ workspaceRoot: "./workspace", theme: "../dark" }),
+      "utf8",
+    );
+    expect(() => resolveTheme({ frameworkRoot, env: {} })).toThrow(
+      "theme 只能包含小写字母、数字和连字符",
+    );
+
+    writeFileSync(
+      configPath,
+      JSON.stringify({ workspaceRoot: "./workspace", theme: "missing" }),
+      "utf8",
+    );
+    expect(() => resolveTheme({ frameworkRoot, env: {} })).toThrow(
+      "主题不存在或缺少 theme.css",
+    );
   });
 
   it("支持绝对 workspace 路径", () => {

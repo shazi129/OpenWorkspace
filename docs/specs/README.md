@@ -35,4 +35,5 @@ Spec 描述功能的期望行为、非目标和可验证的验收条件，不承
 - [目录树](directory-tree.md)
 - [模块自动索引首页](generated-module-index.md)
 - [Markdown TOC](markdown-toc.md)
+- [构建主题选择](theme-selection.md)
 - [工作区与生成目录选择](workspace-selection.md)

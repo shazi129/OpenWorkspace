@@ -17,7 +17,8 @@ OpenWorkspace 是一个由工作空间驱动的个人网站框架。仓库内的
 
 ## 当前功能
 
-- 按环境变量、`openworkspace.config.json`、内置 `workspace/` 的优先级选择工作区根目录，并通过同一配置选择静态生成目录。
+- 按环境变量、`openworkspace.config.json`、内置 `workspace/` 的优先级选择工作区根目录，并通过同一配置选择静态生成目录和构建主题。
+- 页面结构样式与主题变量分离；默认 `normal` 保持浅色外观，`dark` 提供深褐背景主题。
 - 从 `<workspaceRoot>/config.json` 和 `<workspaceRoot>/modules/<module>/config.json` 加载站点及模块配置。
 - 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。
 - `<workspaceRoot>/services/` 提供不属于单个模块的全局私有服务。
@@ -58,7 +59,7 @@ Astro 内容页面         静态资源路由
 
 | 领域 | 入口文件 | 职责 |
 | --- | --- | --- |
-| 框架根配置 | `src/core/openworkspace-config.mjs` | 解析工作区根目录、静态生成目录及安全边界 |
+| 框架根配置 | `src/core/openworkspace-config.mjs` | 解析工作区根目录、静态生成目录、构建主题及安全边界 |
 | 配置模型 | `src/core/config-schema.ts` | Zod schema、默认值和路径格式校验 |
 | 内容清单 | `src/core/content-loader.ts`、`src/core/content-metadata.ts` | 扫描模块、读取文章元数据、生成内容树、页面路由和资源路由 |
 | 核心类型 | `src/core/types.ts` | 清单、内容文件、目录树和路由类型 |
@@ -71,7 +72,8 @@ Astro 内容页面         静态资源路由
 | 工作区布局 | `src/layouts/WorkspaceLayout.astro` | 模块抽屉、目录栏拖动和收起交互 |
 | 目录树 | `src/components/DirectoryTree.astro` | 递归目录及当前页面状态 |
 | 文章目录 | `src/components/ArticleToc.astro` | 根据 Markdown headings 生成文章 TOC |
-| 全局样式 | `src/styles/global.css` | 桌面、移动端、目录树、正文和 TOC 样式 |
+| 全局样式 | `src/styles/global.css` | 桌面、移动端、目录树、正文和 TOC 的共享结构样式 |
+| 构建主题 | `themes/<name>/theme.css` | 颜色、表面、边框、阴影和图标滤镜变量 |
 
 ## 目录职责
 
@@ -87,6 +89,7 @@ Astro 内容页面         静态资源路由
 | `tests/e2e/` | 预留端到端测试目录 |
 | `docs/` | 公共工程知识、架构、spec 和 ADR |
 | `设计文档/` | UI 原始设计、图片和 draw.io 源文件 |
+| `themes/` | 框架构建主题；默认提供 `normal` 和 `dark` |
 | `<distRoot>/` | Astro 生产构建产物；默认是框架根目录 `dist/`，可指向外部目录 |
 | `.astro/` | Astro 生成的内容与类型缓存，不直接编辑 |
 
@@ -95,6 +98,7 @@ Astro 内容页面         静态资源路由
 - 支持的内容扩展名是 `.md`、`.html` 和 `.htm`。
 - 模块目录名必须与配置中的 `id` 一致。
 - 配置路径必须留在所属模块目录内，符号链接不参与扫描。
+- 根配置的 `theme` 默认是 `normal`，只能选择包含 `theme.css` 的合法主题目录；主题切换需要重新构建。
 - 模块首页优先读取根 `index.md`，也可显式指向内容文件；根首页不存在时自动生成内容索引页，`index.type` 可强制使用生成模式。
 - 文件相对路径决定 URL；移动或重命名内容会改变外部链接。
 - `authenticated` 和 `allowlist` 当前只表示“不进入静态构建”，尚未实现登录访问。

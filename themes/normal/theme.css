@@ -1,0 +1,38 @@
+:root {
+  color-scheme: light;
+  color: #172033;
+  background: #f5f7fb;
+  --accent: #087fe7;
+  --accent-border: #9acbfa;
+  --accent-card-border: #b8d9f7;
+  --accent-focus-ring: rgb(8 127 231 / 16%);
+  --accent-hover: #eef6ff;
+  --accent-strong: #0569c1;
+  --accent-surface: #e7f3ff;
+  --active: #ff6422;
+  --active-border: #ffd4c2;
+  --active-icon-filter: brightness(0) saturate(100%) invert(47%) sepia(95%)
+    saturate(2812%) hue-rotate(347deg) brightness(103%) contrast(101%);
+  --active-surface: #fff4ef;
+  --border: #dce2eb;
+  --code-block: #111827;
+  --code-inline: #f1f5f9;
+  --control-border: #cfd8e5;
+  --control-text: #243044;
+  --hover-surface: #f0f4f8;
+  --icon: #667085;
+  --mobile-header: rgb(255 255 255 / 94%);
+  --module-icon-filter: none;
+  --muted: #64748b;
+  --navigation-text: #3f3554;
+  --overlay: rgb(15 23 42 / 40%);
+  --panel: #ffffff;
+  --shadow-card: 0 8px 24px rgb(15 23 42 / 7%);
+  --shadow-control: 0 2px 6px rgb(15 23 42 / 10%);
+  --shadow-drawer: 12px 0 32px rgb(15 23 42 / 18%);
+  --surface-subtle: #fbfcfe;
+  --tag-surface: #edf6ff;
+  --tag-text: #3f5f7d;
+  --text-soft: #475467;
+  --text-strong: #344054;
+}

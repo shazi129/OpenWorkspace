@@ -2,7 +2,7 @@
 
 ## 系统边界
 
-OpenWorkspace 在构建期读取选中的工作区，把公开页面转换成静态站点。仓库内置 `workspace/` 是默认示例，也可通过 `openworkspace.config.json` 选择外部私有工作区和静态生成目录。`static`/`client` 模块可只发布 `<distRoot>/`；`server` 模块和全局服务由可选 Node API 宿主运行。
+OpenWorkspace 在构建期读取选中的工作区和主题，把公开页面转换成静态站点。仓库内置 `workspace/` 是默认示例，也可通过 `openworkspace.config.json` 选择外部私有工作区、静态生成目录和 `themes/` 下的构建主题。`static`/`client` 模块可只发布 `<distRoot>/`；`server` 模块和全局服务由可选 Node API 宿主运行。
 
 ```text
 内容维护边界                         框架实现边界
@@ -27,6 +27,7 @@ OpenWorkspace 在构建期读取选中的工作区，把公开页面转换成静
 4. Astro Content Collection 加载 Markdown，Sätteri 处理 Markdown 扩展和图片。
 5. 动态页面模板通过 `getStaticPaths()` 生成所有静态 URL。
 6. Astro 将页面、资源和优化图片输出到配置的 `<distRoot>/`。
+7. Vite 只把根配置选中的 `themes/<theme>/theme.css` 与共享结构样式打包进页面。
 
 ## 页面组成
 

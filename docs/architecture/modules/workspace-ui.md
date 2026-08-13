@@ -12,7 +12,15 @@
 | `src/components/ModuleNavigation.astro` | 一级模块导航 |
 | `src/components/DirectoryTree.astro` | 递归目录与文件链接 |
 | `src/components/GeneratedModuleIndex.astro` | 自动首页、标题与标签搜索、客户端分页 |
-| `src/styles/global.css` | 布局、状态、响应式和可访问性样式 |
+| `src/styles/global.css` | 共享布局、状态、响应式和可访问性样式 |
+| `themes/<name>/theme.css` | 颜色、表面、边框、阴影和图标滤镜变量 |
+
+## 主题
+
+- `openworkspace.config.json` 的 `theme` 在 Astro 启动时选择 `themes/<name>/theme.css`，默认使用 `normal`。
+- `normal` 保留原浅色外观；`dark` 使用深褐色背景、暖米色文字和琥珀强调色。
+- Vite 只打包选中的主题，组件始终通过语义变量取色，不直接依赖某个主题目录。
+- 主题是构建期配置；切换后需要重启开发服务器或重新构建。
 
 ## 桌面布局
 
@@ -55,4 +63,4 @@
 - 桌面拖动分隔条在移动端隐藏，目录仍可整体收起。
 - `prefers-reduced-motion` 会缩短动画。
 
-行为契约见[模块导航 spec](../../specs/module-navigation.md)、[目录树 spec](../../specs/directory-tree.md)和[模块自动索引首页 spec](../../specs/generated-module-index.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。
+行为契约见[模块导航 spec](../../specs/module-navigation.md)、[目录树 spec](../../specs/directory-tree.md)、[模块自动索引首页 spec](../../specs/generated-module-index.md)和[构建主题选择 spec](../../specs/theme-selection.md)，原始视觉方向见[设计文档](../../../设计文档/设计文档.md)。

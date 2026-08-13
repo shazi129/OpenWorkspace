@@ -10,6 +10,8 @@ export interface ResolvedOpenWorkspaceConfig {
   distRoot: string;
   frameworkRoot: string;
   source: OpenWorkspaceConfigSource;
+  theme: string;
+  themePath: string;
   workspaceRoot: string;
 }
 
@@ -24,5 +26,13 @@ export declare function resolveWorkspaceRoot(
 ): string;
 
 export declare function resolveDistRoot(
+  options?: LoadOpenWorkspaceConfigOptions,
+): string;
+
+export declare function resolveTheme(
+  options?: LoadOpenWorkspaceConfigOptions,
+): string;
+
+export declare function resolveThemePath(
   options?: LoadOpenWorkspaceConfigOptions,
 ): string;

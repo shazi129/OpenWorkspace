@@ -9,6 +9,7 @@
 | 理解整体架构 | [`CONTEXT.md`](CONTEXT.md)、[`架构概览`](../architecture/overview.md) | `src/core/`、`src/pages/` |
 | 修改站点或模块配置 | [`模块发布 spec`](../specs/module-publication.md)、[`内容加载模块`](../architecture/modules/content-pipeline.md)、[`技术方案`](../技术方案.md) | `src/core/config-schema.ts` |
 | 修改工作区、生成目录或外部仓库路径 | [`工作区与生成目录选择 spec`](../specs/workspace-selection.md)、[`内容加载模块`](../architecture/modules/content-pipeline.md)、[`ADR-0005`](../adr/0005-configurable-workspace-root.md) | `src/core/openworkspace-config.mjs`、`astro.config.mjs` |
+| 修改主题选择、主题变量或新增主题 | [`构建主题选择 spec`](../specs/theme-selection.md)、[`工作区 UI`](../architecture/modules/workspace-ui.md)、[`ADR-0006`](../adr/0006-build-time-theme-selection.md) | `themes/`、`src/styles/global.css`、`astro.config.mjs` |
 | 修改内容扫描、文章元数据、自动首页、搜索、分页或 URL | [`目录树 spec`](../specs/directory-tree.md)、[`自动索引首页 spec`](../specs/generated-module-index.md)、[`内容加载模块`](../architecture/modules/content-pipeline.md) | `src/core/content-loader.ts`、`src/core/content-metadata.ts`、`GeneratedModuleIndex.astro`、`workspace-markdown-loader.ts` |
 | 修改模块导航排序、可见性或布局 | [`模块导航 spec`](../specs/module-navigation.md)、[`模块发布 spec`](../specs/module-publication.md)、[`工作区 UI`](../architecture/modules/workspace-ui.md) | `ModuleNavigation.astro`、`content-loader.ts`、`global.css` |
 | 修改目录树布局与交互 | [`目录树 spec`](../specs/directory-tree.md)、[`工作区 UI`](../architecture/modules/workspace-ui.md) | `WorkspaceLayout.astro`、`DirectoryTree.astro`、`global.css` |

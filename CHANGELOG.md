@@ -24,10 +24,12 @@
 - 新增 `scripts/install.bat`，一键安装 fnm、Node 版本及项目依赖。
 - 安装文档补充 Windows 下 fnm 安装方式。
 - 增加 `openworkspace.config.json`，可通过 `workspaceRoot` 选择外部工作区，并通过 `distRoot` 分离静态生成物；默认继续使用内置示例和根目录 `dist/`。
+- 增加构建主题系统；`openworkspace.config.json` 可通过 `theme` 选择 `normal` 或深褐色 `dark`，也可在 `themes/` 中新增自定义主题。
 
 ### Changed
 
 - 内容缺少 `create` 时默认使用 2000-01-01；`tags` 允许缺少或留空并规范化为空数组。
+- 将颜色、表面、边框、阴影和图标滤镜从共享布局 CSS 抽取到独立主题变量。
 - 将文章路径中的半角 `%` 调整为全角 `％`，避开 Astro 静态路由的百分号解码限制。
 - 私有内容根目录由 `data/` 调整为 `workspace/`，模块统一移动到 `workspace/modules/`。
 - 模块配置增加 `static`、`client`、`server` 三种运行模式。

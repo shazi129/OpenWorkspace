@@ -1,4 +1,5 @@
 {
   "workspaceRoot": "./workspace",
-  "distRoot": "./dist"
+  "distRoot": "./dist",
+  "theme": "normal"
 }

@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import "@openworkspace-theme";
+import { resolveTheme } from "../core/openworkspace-config.mjs";
 
 interface Props {
   description?: string;
@@ -7,10 +9,11 @@ interface Props {
 }
 
 const { description = "", title } = Astro.props;
+const theme = resolveTheme();
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme={theme}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,4 +24,3 @@ const { description = "", title } = Astro.props;
     <slot />
   </body>
 </html>
-
