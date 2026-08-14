@@ -8,6 +8,7 @@
 
 ### Added
 
+- 新增 `scripts/install.sh`，在 Linux 下通过 fnm 安装 `.nvmrc` 指定的 Node.js 版本及项目依赖。
 - 建立 Codex 与 CodeBuddy 共用的工程知识库、薄适配入口、spec 和 ADR 目录。
 - 增加 `npm run context`，用于输出工程快速上下文、当前工作区状态和最近提交。
 - 目录树增加文件夹和文档图标，便于快速区分目录与内容文件。
