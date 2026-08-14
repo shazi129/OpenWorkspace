@@ -16,3 +16,4 @@
 - 修改内容后运行 `npm run dev` 预览，运行 `npm run build` 生成 `<distRoot>/`；默认仍为框架根目录 `dist/`。
 
 `src/` 属于框架实现，普通内容使用者不需要修改。
+
