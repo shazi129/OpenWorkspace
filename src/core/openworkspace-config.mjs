@@ -4,6 +4,15 @@ import path from "node:path";
 export const OPENWORKSPACE_CONFIG_FILE = "openworkspace.config.json";
 const DEFAULT_DIST_ROOT = "./dist";
 const DEFAULT_THEME = "normal";
+const DEFAULT_WORKSPACE_ROOT = "./workspace";
+
+function isDirectory(targetPath) {
+  try {
+    return statSync(targetPath).isDirectory();
+  } catch {
+    return false;
+  }
+}
 
 function isSameOrInside(basePath, targetPath) {
   const relative = path.relative(basePath, targetPath);
@@ -126,10 +135,22 @@ export function loadOpenWorkspaceConfig({
     throw new Error("OPENWORKSPACE_WORKSPACE_ROOT 必须是非空路径");
   }
 
-  const workspaceRoot = path.resolve(
+  const defaultWorkspaceRoot = path.resolve(
     resolvedFrameworkRoot,
-    environmentWorkspaceRoot?.trim() ?? config?.workspaceRoot ?? "./workspace",
+    DEFAULT_WORKSPACE_ROOT,
   );
+  const configuredWorkspaceRoot = config
+    ? path.resolve(resolvedFrameworkRoot, config.workspaceRoot)
+    : undefined;
+  const usesConfiguredWorkspace =
+    environmentWorkspaceRoot === undefined &&
+    configuredWorkspaceRoot !== undefined &&
+    isDirectory(configuredWorkspaceRoot);
+  const workspaceRoot = environmentWorkspaceRoot
+    ? path.resolve(resolvedFrameworkRoot, environmentWorkspaceRoot.trim())
+    : usesConfiguredWorkspace
+      ? configuredWorkspaceRoot
+      : defaultWorkspaceRoot;
   const distRoot = path.resolve(
     resolvedFrameworkRoot,
     config?.distRoot ?? DEFAULT_DIST_ROOT,
@@ -156,7 +177,7 @@ export function loadOpenWorkspaceConfig({
     frameworkRoot: resolvedFrameworkRoot,
     source: environmentWorkspaceRoot
       ? "environment"
-      : config
+      : usesConfiguredWorkspace
         ? "config"
         : "default",
     theme,

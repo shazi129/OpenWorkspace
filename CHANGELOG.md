@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- `openworkspace.config.json` 指定的工作区不存在或不是目录时，自动从框架根目录回退到内置 `workspace/`。
+
 ### Added
 
 - 建立 Codex 与 CodeBuddy 共用的工程知识库、薄适配入口、spec 和 ADR 目录。

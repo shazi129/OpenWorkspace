@@ -47,14 +47,16 @@ describe("OpenWorkspace 配置", () => {
 
   it("从根目录配置读取相对 workspace 路径", () => {
     const frameworkRoot = createFrameworkRoot();
+    const workspaceRoot = path.join(frameworkRoot, "private-workspace");
+    mkdirSync(workspaceRoot);
     writeFileSync(
       path.join(frameworkRoot, "openworkspace.config.json"),
-      JSON.stringify({ workspaceRoot: "../private-workspace" }),
+      JSON.stringify({ workspaceRoot: "./private-workspace" }),
       "utf8",
     );
 
     expect(resolveWorkspaceRoot({ frameworkRoot, env: {} })).toBe(
-      path.resolve(frameworkRoot, "../private-workspace"),
+      workspaceRoot,
     );
     expect(resolveDistRoot({ frameworkRoot, env: {} })).toBe(
       path.join(frameworkRoot, "dist"),
@@ -63,19 +65,58 @@ describe("OpenWorkspace 配置", () => {
 
   it("从根目录配置读取相对 dist 路径", () => {
     const frameworkRoot = createFrameworkRoot();
+    const workspaceRoot = path.join(frameworkRoot, "private-workspace");
+    mkdirSync(workspaceRoot);
     writeFileSync(
       path.join(frameworkRoot, "openworkspace.config.json"),
       JSON.stringify({
-        workspaceRoot: "../private-workspace",
-        distRoot: "../private-workspace/dist",
+        workspaceRoot: "./private-workspace",
+        distRoot: "./private-workspace/dist",
       }),
       "utf8",
     );
 
     expect(loadOpenWorkspaceConfig({ frameworkRoot, env: {} })).toMatchObject({
-      distRoot: path.resolve(frameworkRoot, "../private-workspace/dist"),
-      workspaceRoot: path.resolve(frameworkRoot, "../private-workspace"),
+      distRoot: path.join(workspaceRoot, "dist"),
+      workspaceRoot,
     });
+  });
+
+  it("配置的 workspace 不存在时回退到仓库内置 workspace", () => {
+    const frameworkRoot = createFrameworkRoot();
+    mkdirSync(path.join(frameworkRoot, "workspace"));
+    createTheme(frameworkRoot, "dark");
+    writeFileSync(
+      path.join(frameworkRoot, "openworkspace.config.json"),
+      JSON.stringify({
+        workspaceRoot: "../missing-workspace",
+        distRoot: "./site-output",
+        theme: "dark",
+      }),
+      "utf8",
+    );
+
+    expect(loadOpenWorkspaceConfig({ frameworkRoot, env: {} })).toMatchObject({
+      distRoot: path.join(frameworkRoot, "site-output"),
+      source: "default",
+      theme: "dark",
+      workspaceRoot: path.join(frameworkRoot, "workspace"),
+    });
+  });
+
+  it("配置的 workspace 不是目录时回退到仓库内置 workspace", () => {
+    const frameworkRoot = createFrameworkRoot();
+    mkdirSync(path.join(frameworkRoot, "workspace"));
+    writeFileSync(path.join(frameworkRoot, "not-a-directory"), "", "utf8");
+    writeFileSync(
+      path.join(frameworkRoot, "openworkspace.config.json"),
+      JSON.stringify({ workspaceRoot: "./not-a-directory" }),
+      "utf8",
+    );
+
+    expect(resolveWorkspaceRoot({ frameworkRoot, env: {} })).toBe(
+      path.join(frameworkRoot, "workspace"),
+    );
   });
 
   it("默认使用 normal 并允许从根目录配置选择主题", () => {
@@ -118,6 +159,7 @@ describe("OpenWorkspace 配置", () => {
   it("支持绝对 workspace 路径", () => {
     const frameworkRoot = createFrameworkRoot();
     const absoluteWorkspaceRoot = path.resolve(frameworkRoot, "external");
+    mkdirSync(absoluteWorkspaceRoot);
     writeFileSync(
       path.join(frameworkRoot, "openworkspace.config.json"),
       JSON.stringify({ workspaceRoot: absoluteWorkspaceRoot }),

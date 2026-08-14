@@ -17,7 +17,7 @@ OpenWorkspace 是一个由工作空间驱动的个人网站框架。仓库内的
 
 ## 当前功能
 
-- 按环境变量、`openworkspace.config.json`、内置 `workspace/` 的优先级选择工作区根目录，并通过同一配置选择静态生成目录和构建主题。
+- 按环境变量、`openworkspace.config.json`、内置 `workspace/` 的优先级选择工作区根目录；配置文件指向的目录不可用时回退到内置工作区，并通过同一配置选择静态生成目录和构建主题。
 - 页面结构样式与主题变量分离；默认 `normal` 保持浅色外观，`dark` 提供深褐背景主题。
 - 从 `<workspaceRoot>/config.json` 和 `<workspaceRoot>/modules/<module>/config.json` 加载站点及模块配置。
 - 模块支持 `static`、`client`、`server` 三种运行模式；服务端模块通过 `serverEntry` 注册 API。

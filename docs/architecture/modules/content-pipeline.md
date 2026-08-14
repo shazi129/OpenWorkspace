@@ -60,7 +60,7 @@ Astro 内容集合复用清单中的已发布模块范围，因此 `publish: fal
 
 ## 不变量
 
-- `WORKSPACE_ROOT` 由 `OPENWORKSPACE_WORKSPACE_ROOT`、根目录 `openworkspace.config.json`、内置 `workspace/` 依次选择。
+- `WORKSPACE_ROOT` 由 `OPENWORKSPACE_WORKSPACE_ROOT`、根目录 `openworkspace.config.json`、内置 `workspace/` 依次选择；配置文件指向的路径不可用时回退到内置工作区。
 - `services/`、模块 `server/` 和 `storage/` 不参与静态资源扫描。
 - 路径进入清单前必须经过模块边界校验。
 - 符号链接不进入内容或资源路由。

@@ -1,7 +1,7 @@
 # 工作区与生成目录选择
 
 - Status: Implemented
-- Updated: 2026-08-13
+- Updated: 2026-08-14
 
 ## 目标
 
@@ -16,9 +16,9 @@
 1. `OPENWORKSPACE_WORKSPACE_ROOT` 环境变量具有最高优先级。
 2. 未设置环境变量时，读取框架根目录的 `openworkspace.config.json`；仓库提供的默认配置指向内置 `workspace/`。
 3. 配置文件通过非空字符串字段 `workspaceRoot` 指定工作区，通过非空字符串字段 `distRoot` 指定静态生成目录，并通过 `theme` 选择构建主题；相对路径都以框架根目录为基准。
-4. 环境变量和配置文件都不存在时，使用框架仓库内置的 `workspace/`。
+4. 环境变量和配置文件都不存在时，使用框架仓库内置的 `workspace/`；配置文件指定的 `workspaceRoot` 不存在或不是目录时，也回退到这个内置工作区。
 5. 未配置 `distRoot` 时默认使用框架根目录的 `./dist`，保持现有目录结构兼容。
-6. 已存在但无法解析、字段未知、`workspaceRoot`、`distRoot` 或 `theme` 无效的配置必须立即报错。
+6. 已存在但无法解析、字段未知，或 `workspaceRoot`、`distRoot`、`theme` 字段格式无效的配置必须立即报错。
 7. `distRoot` 不能是框架/工作区的根目录或父目录，也不能放入源码、模块、服务、存储或部署配置目录，避免构建清理误删源数据。
 8. Nginx、systemd 等实例部署配置位于 `<workspaceRoot>/deploy/`，不参与静态构建。
 9. 未配置 `theme` 时默认使用 `normal`；详细主题行为见[构建主题选择](theme-selection.md)。
@@ -27,6 +27,7 @@
 
 - 无配置时生产构建继续使用内置 `workspace/`。
 - 配置相对或绝对路径时，内容加载和 postbuild 读取所选工作区。
+- 配置文件指向不存在的路径或普通文件时，从 OpenWorkspace 根目录回退到内置 `workspace/`。
 - 配置相对或绝对 `distRoot` 时，Astro 构建、预览和 postbuild 使用同一生成目录。
 - 默认配置仍生成到框架根目录的 `dist/`。
 - 默认配置使用 `normal`，并可选择存在于框架 `themes/` 下的其他主题。
